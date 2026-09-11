@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frise chronologique 1710–1830</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --gold:    #C9A84C;
+    --gold-lt: #E8D08A;
+    --ink:     #1A1208;
+    --parch:   #F2E8D0;
+    --parch-dk:#E0D0A8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', serif;
+    overflow-x: hidden;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0D0C07 0%, #1A1208 60%, #0D0A04 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+  }
+  header::before, header::after {
+    content: '✦'; position: absolute; color: var(--gold);
+    font-size: 1.2rem; top: 50%; transform: translateY(-50%);
+  }
+  header::before { left: 2rem; }
+  header::after  { right: 2rem; }
+  .header-eyebrow {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.35em; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 0.6rem;
+  }
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.3rem, 3vw, 2.2rem);
+    font-weight: 700; color: var(--parch);
+    letter-spacing: 0.05em; line-height: 1.3;
+  }
+  header h1 span { color: var(--gold); }
+  .header-sub {
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 0.85rem; color: var(--gold-lt);
+    opacity: 0.75; margin-top: 0.5rem;
+  }
+
+  .legend {
+    background: #100E06; border-bottom: 1px solid #3A3020;
+    padding: 0.7rem 1.5rem;
+    display: flex; flex-wrap: wrap;
+    gap: 0.8rem 1.5rem; align-items: center; justify-content: center;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-family: 'Cinzel', serif; font-size: 0.6rem;
+    letter-spacing: 0.1em; color: var(--parch-dk); opacity: 0.9;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-sep {
+    border-left: 1px solid #3A3020; padding-left: 1.2rem;
+    margin-left: 0.5rem; display: flex; gap: 1rem; align-items: center;
+  }
+  .legend-sep span { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.08em; color: var(--gold-lt); }
+  .legend-sep .lbl { color: var(--gold); font-weight: 600; }
+
+  .timeline-wrapper {
+    overflow-x: auto; background: var(--ink);
+    padding: 0 0 2rem; -webkit-overflow-scrolling: touch;
+  }
+  .timeline-wrapper::-webkit-scrollbar { height: 6px; }
+  .timeline-wrapper::-webkit-scrollbar-track { background: #0D0C07; }
+  .timeline-wrapper::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+  .year-header-row {
+    display: flex; align-items: stretch;
+    border-bottom: 1px solid #2A2010;
+    background: #0D0C07;
+    position: sticky; top: 0; z-index: 20;
+    min-width: max-content;
+  }
+  .row-label-head {
+    min-width: 165px; width: 165px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'Cinzel', serif; font-size: 0.58rem;
+    letter-spacing: 0.12em; color: var(--gold);
+    border-right: 1px solid #2A2010;
+    display: flex; align-items: center; flex-shrink: 0;
+  }
+  .year-cell-head {
+    width: 64px; min-width: 64px; padding: 0.6rem 0.2rem;
+    text-align: center; font-family: 'Cinzel', serif;
+    font-size: 0.62rem; letter-spacing: 0.03em; color: var(--gold-lt);
+    border-right: 1px solid #1E1A10;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .year-cell-head.decade { color: var(--gold); font-weight: 700; border-right: 2px solid #3A3020; }
+
+  .tl-row {
+    display: flex; align-items: stretch;
+    border-bottom: 1px solid #1A1408; min-width: max-content;
+  }
+  .tl-row:hover { background: rgba(201,168,76,0.025); }
+
+  .row-label {
+    min-width: 165px; width: 165px;
+    padding: 0.5rem 0.8rem;
+    border-right: 1px solid #2A2010;
+    display: flex; align-items: center; gap: 0.5rem;
+    position: sticky; left: 0; z-index: 10;
+    background: #0F0D06; flex-shrink: 0;
+  }
+  .row-label-icon { font-size: 0.95rem; flex-shrink: 0; }
+  .row-label-text {
+    font-family: 'Cinzel', serif; font-size: 0.57rem;
+    letter-spacing: 0.07em; line-height: 1.4; color: var(--parch-dk);
+  }
+  .row-label-text em {
+    display: block; font-family: 'Libre Baskerville', serif;
+    font-style: italic; font-size: 0.5rem; color: var(--gold);
+    opacity: 0.8; letter-spacing: 0.03em; margin-top: 0.15rem;
+  }
+
+  .year-cell {
+    width: 64px; min-width: 64px;
+    border-right: 1px solid #1A1408;
+    padding: 0.3rem 0.22rem; flex-shrink: 0;
+  }
+  .year-cell.decade-col { border-right: 2px solid #2A2010; }
+
+  .event {
+    border-radius: 3px; padding: 0.24rem 0.3rem;
+    margin-bottom: 0.18rem; font-size: 0.5rem;
+    line-height: 1.35; cursor: default;
+    transition: filter 0.15s, transform 0.15s;
+    position: relative;
+    border-left: 2px solid var(--row-bd);
+    background: var(--row-bg); color: var(--row-fg);
+  }
+  .event:hover { filter: brightness(1.3); transform: scale(1.05); z-index: 50; }
+  .event strong { display: block; font-size: 0.505rem; letter-spacing: 0.02em; margin-bottom: 0.07rem; }
+
+  /* Row colour themes */
+  .row-lgabriel    { --row-bg:#3A200A; --row-fg:#F0C88A; --row-bd:#8A6030; }
+  .row-lconstant   { --row-bg:#2A1A06; --row-fg:#DEB870; --row-bd:#6A4015; }
+  .row-mousquet    { --row-bg:#1A1A0A; --row-fg:#D4C878; --row-bd:#6A6010; }
+  .row-politique   { --row-bg:#0A1A36; --row-fg:#A8C0EC; --row-bd:#1E3A70; }
+  .row-conflits    { --row-bg:#3A0A0A; --row-fg:#E8A8A8; --row-bd:#701E1E; }
+  .row-declin      { --row-bg:#2A0A1A; --row-fg:#E8A0C0; --row-bd:#701040; }
+  .row-amerique    { --row-bg:#0A2A20; --row-fg:#80D4B0; --row-bd:#1E6A50; }
+  .row-revolution  { --row-bg:#2A1A00; --row-fg:#F0C060; --row-bd:#705010; }
+  .row-empire      { --row-bg:#1A0A2A; --row-fg:#C8A8E8; --row-bd:#4A1E6A; }
+
+  .event[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; left: 50%; top: calc(100% + 5px);
+    transform: translateX(-50%);
+    background: #0D0B05; color: var(--parch);
+    border: 1px solid var(--gold); border-radius: 4px;
+    padding: 0.45rem 0.65rem; font-size: 0.55rem; line-height: 1.55;
+    white-space: pre-wrap; max-width: 215px;
+    z-index: 100; pointer-events: none;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.85);
+    font-family: 'Libre Baskerville', serif;
+  }
+
+  /* Era bands */
+  .era-band {
+    display: flex; min-width: max-content;
+    border-bottom: 1px solid #2A2010;
+    background: #0A0900;
+  }
+  .era-spacer { min-width: 165px; width: 165px; flex-shrink: 0; border-right: 1px solid #2A2010; }
+  .era-block {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif; font-size: 0.55rem;
+    letter-spacing: 0.12em; padding: 0.3rem 0.2rem;
+    border-right: 2px solid #2A2010; flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  footer {
+    background: #0D0C07; border-top: 1px solid #2A2010;
+    padding: 1rem 2rem; text-align: center;
+    font-family: 'IM Fell English', serif; font-style: italic;
+    font-size: 0.7rem; color: var(--gold); opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="header-eyebrow">Petits-fils &amp; arrière-petit-fils de d'Artagnan · Régimes de France · Europe</p>
+  <h1>Frise chronologique <span>1710 – 1830</span></h1>
+  <p class="header-sub">Louis-Gabriel · Louis-Constantin · Guerres · Révolution · Empire · Restauration</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#8A6030"></div>Louis-Gabriel de Batz (petit-fils)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6A4015"></div>Louis-Constantin de Batz (arrière-petit-fils)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6A6010"></div>Compagnies des Mousquetaires</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1E3A70"></div>Vie politique française</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#701E1E"></div>Conflits en Europe</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#701040"></div>Déclin colonial à l'Est</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1E6A50"></div>Redressement à l'Ouest</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#705010"></div>Révolution française</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4A1E6A"></div>Empire napoléonien</div>
+  <div class="legend-sep">
+    <span class="lbl">FIABILITÉ :</span>
+    <span>✓ documenté</span>
+    <span>(~) probable</span>
+    <span>(?) incertain</span>
+  </div>
+</div>
+
+<div class="timeline-wrapper">
+  <div id="tl"></div>
+</div>
+
+<footer>
+  Survolez les événements pour les détails · Sources : Soc. archéol. du Gers, Archives Haute-Saône, Gallica, Wikipedia · © 2026
+</footer>
+
+<script>
+const START = 1710, END = 1830;
+const YEARS = Array.from({length: END - START + 1}, (_, i) => START + i);
+const CELL_W = 64; // px — keep in sync with CSS
+
+/* ── ERA BANDS ── */
+const ERAS = [
+  { start:1710, end:1714, label:"Fin Louis XIV",   color:"#1A160A", fg:"#907040" },
+  { start:1715, end:1723, label:"Régence",          color:"#0D1A0D", fg:"#507050" },
+  { start:1724, end:1774, label:"Louis XV",         color:"#0A1020", fg:"#405080" },
+  { start:1775, end:1792, label:"Louis XVI",        color:"#1A100A", fg:"#805040" },
+  { start:1793, end:1799, label:"Révolution",       color:"#200A00", fg:"#A06020" },
+  { start:1800, end:1814, label:"Empire",           color:"#100A20", fg:"#7050A0" },
+  { start:1815, end:1824, label:"Restauration",     color:"#0A0A1A", fg:"#506090" },
+  { start:1825, end:1830, label:"Charles X",        color:"#0A0A18", fg:"#405070" },
+];
+
+/* ── ROW DATA ── */
+const ROWS = [
+
+  /* ── LOUIS-GABRIEL ── */
+  {
+    id:'lgabriel', cls:'row-lgabriel', icon:'⚔️',
+    label:"Louis-Gabriel de Batz",
+    sublabel:"petit-fils (1710–1783)",
+    events:[
+      { y:1710, title:"Naissance ✓",
+        tip:"[DOCUMENTÉ] Louis-Gabriel de Batz de Castelmore, né en 1710. Fils de Louis II le Cadet et de Marie Anne Amé. Petit-fils direct de Charles de Batz d'Artagnan. Titres : marquis de Castelmore et baron de Sainte-Croix.\nSource : Soc. archéol. du Gers, 1973." },
+      { y:1714, title:"† Père ✓",
+        tip:"[DOCUMENTÉ] Son père Louis II meurt le 7 juin 1714 au château de Sainte-Croix. Sa mère Marie Anne Amé meurt la même année. Louis-Gabriel est orphelin à 4 ans. Tutelle familiale probable, domaine de Sainte-Croix géré par des proches." },
+      { y:1728, title:"Capitaine dragons (~)",
+        tip:"[DOCUMENTÉ pour le grade, date approx.] Louis-Gabriel devient capitaine de dragons. La date précise n'est pas documentée ; on peut estimer son entrée au service vers 1727-1730, à l'âge habituel pour un fils de noblesse militaire." },
+      { y:1741, title:"Gendarmerie du roi ✓",
+        tip:"[DOCUMENTÉ] En 1741, Louis-Gabriel est aide-major de la gendarmerie de la Maison du roi et mestre de camp de cavalerie. IMPORTANT : il ne s'agit pas de la 'gendarmerie' au sens actuel, mais des Gendarmes de la Garde — cavalerie lourde d'élite tenant le 2e rang de la Maison militaire du roi, après les gardes du corps. Entrée dans la Maison du roi : promotion sociale considérable, passage de l'armée de ligne à la garde rapprochée du souverain. La charge d'aide-major était une charge administrative et non vénale dans ce corps — obtenue par nomination royale sur mérite et recommandations. On ignore la date exacte de son départ du service actif ; il vivait à Paris après la vente de Castelmore (1769) et jusqu'à sa mort (1783), sans mission documentée.\nSource : Soc. archéol. du Gers ; Wikipedia D'Artagnan." },
+      { y:1745, title:"Mariage ✓",
+        tip:"[DOCUMENTÉ] Louis-Gabriel épouse le 12 juillet 1745 à Paris Constance-Gabrielle du Moncel de Lourailles (1720–1764), veuve de Joseph II Bonnier de la Mosson (riche fermier général). Mariage tardif (il a 35 ans), union avec la grande finance.\nSource : Archives de Paris ; Soc. archéol. du Gers." },
+      { y:1747, title:"Naissance Louis-Constantin ✓",
+        tip:"[DOCUMENTÉ] Naissance de Louis-Constantin de Batz de Castelmore le 25 juillet 1747 à Paris. Fils unique de Louis-Gabriel et de Constance-Gabrielle. Dernier descendant mâle de Charles de Batz d'Artagnan.\nSource : Reconstitution état-civil, Dépôt central Bourse, Paris." },
+      { y:1764, title:"† Épouse ✓",
+        tip:"[DOCUMENTÉ] Mort de Constance-Gabrielle du Moncel de Lourailles (1720–1764). Louis-Gabriel est veuf à 54 ans. Il ne se remarie pas. Son fils Louis-Constantin a 17 ans." },
+      { y:1769, title:"Vente Castelmore ✓",
+        tip:"[DOCUMENTÉ] Louis-Gabriel vend le château et les terres de Castelmore le 30 octobre 1769. Fin de la possession familiale du domaine ancestral depuis 1430 environ. La vente marque le déclin économique de la branche. Votre souvenir était exact.\nSource : Soc. archéol. du Gers ; acte notarié cité par Geneastar." },
+      { y:1783, title:"† Paris ✓",
+        tip:"[DOCUMENTÉ] Louis-Gabriel de Batz de Castelmore meurt à Paris le 15 août 1783, à 73 ans. Son fils Louis-Constantin assiste le 16 août 1783 à la pose des scellés sur son appartement parisien — signe que la succession est modeste.\nSource : Soc. archéol. du Gers ; Wikipedia fr." },
+    ]
+  },
+
+  /* ── LOUIS-CONSTANTIN ── */
+  {
+    id:'lconstant', cls:'row-lconstant', icon:'🗡️',
+    label:"Louis-Constantin de Batz",
+    sublabel:"arrière-petit-fils (1747–1827)",
+    events:[
+      { y:1747, title:"Naissance ✓",
+        tip:"[DOCUMENTÉ] Louis-Constantin de Batz de Castelmore, né le 25 juillet 1747 à Paris. Fils unique de Louis-Gabriel. Dernier descendant mâle en ligne directe de d'Artagnan.\nSource : Reconstitution état-civil, Dépôt central Bourse, Paris, 1872." },
+      { y:1764, title:"Royal-Étranger ✓",
+        tip:"[DOCUMENTÉ] En 1764 (à 17 ans), Louis-Constantin entre comme sous-lieutenant au régiment Royal-Étranger cavalerie, en garnison à Strasbourg. Sous-lieutenant le 5 avril 1764. LE RÉGIMENT : créé en 1659, c'est un régiment de cavalerie lourde de l'armée de ligne (hors Maison du roi), l'un des plus anciens et prestigieux régiments de cavalerie française. Il deviendra le 7e régiment de cavalerie en 1791. Recrute à travers l'Europe des officiers nobles de diverses nationalités — d'où le nom 'Étranger'. Garnison habituelle sur le Rhin (Strasbourg, Alsace), rôle défensif de la frontière orientale.\nSource : Soc. archéol. du Gers ; Wikipedia Royal-Étranger cavalerie." },
+      { y:1765, title:"Capitaine-commandant ✓",
+        tip:"[DOCUMENTÉ] Promotion de Louis-Constantin au grade de capitaine-commandant en 1765 — un an seulement après son entrée comme sous-lieutenant. EXPLICATION : le titre de 'capitaine-commandant' dans la cavalerie de ligne désignait un officier qui commandait une compagnie PAR DÉLÉGATION du mestre de camp, sans en être propriétaire. Distinct du 'capitaine en pied' (propriétaire vénalement de sa compagnie). Cette promotion par commission était possible pour un jeune noble recommandé, surtout dans un régiment étranger où les règles de vénalité étaient plus souples. La réforme de Choiseul (1763) avait justement tendu à supprimer la vénalité des charges de capitaine — ce qui ouvrait paradoxalement la voie à des promotions plus rapides au mérite et par commission. Il deviendra capitaine titulaire le 5 mai 1772 et aide-major le 2 mars 1773.\nSource : Soc. archéol. du Gers, 1973." },
+      { y:1783, title:"† Père / Scellés ✓",
+        tip:"[DOCUMENTÉ] À la mort de son père (15 août 1783), Louis-Constantin assiste le 16 août à la pose des scellés sur l'appartement parisien : signe d'une succession problématique et d'une situation financière fragile." },
+      { y:1789, title:"Révolution (~)",
+        tip:"[PROBABLE] Louis-Constantin, officier de l'Ancien Régime, est directement touché par la Révolution et la suppression de l'armée royale. Sa situation exacte en 1789-1792 n'est pas précisément documentée." },
+      { y:1792, title:"Émigration (?) / Républ. (~)",
+        tip:"[INCERTAIN / PROBABLE] Les sources indiquent qu'il 'émigre probablement pendant la Révolution' mais fut aussi 'capturé par les Autrichiens' avant de s'enfuir et de revenir en France. Une source mentionne un engagement dans les armées républicaines en 1792. Ces éléments sont partiellement contradictoires et peu documentés.\nSource : Monarchies et Dynasties du Monde." },
+      { y:1793, title:"Mariage ✓",
+        tip:"[DOCUMENTÉ] Louis-Constantin épouse Jeanne Molé (née en 1755) le 4 floréal an II, soit le 23-24 avril 1794 à Paris. Mariage tardif : il a 46 ans, elle 38. Sources divergent légèrement sur la date exacte (an II = 1794, mais certaines sources disent 1793).\nSource : Archives Haute-Saône ; Soc. archéol. du Gers." },
+      { y:1775, title:"Louise-Constance ✓",
+        tip:"[DOCUMENTÉ] Naissance de Louise-Constance de Batz de Castelmore (1775–1857), fille aînée, née avant le mariage officiel de ses parents. D'où une descendance subsistante en ligne féminine.\nSource : Soc. archéol. du Gers." },
+      { y:1776, title:"Aglaé-Rosalie ✓",
+        tip:"[DOCUMENTÉ] Naissance d'Aglaé-Rosalie-Victorine de Batz de Castelmore le 4 septembre 1776 à Paris. Seconde fille. La lignée masculine s'arrête avec Louis-Constantin.\nSource : Soc. archéol. du Gers." },
+      { y:1807, title:"Bauffremont ✓",
+        tip:"[DOCUMENTÉ] Vers 1807, Louis-Constantin s'installe au château de Scey-sur-Saône (Haute-Saône), hébergé par le prince Alexandre-Emmanuel de Bauffremont comme 'ami'. SURVIE SOUS LES RÉGIMES : malgré la Révolution, la Terreur, le Directoire, l'Empire et la Restauration, Louis-Constantin survit jusqu'à 79 ans. Son émigration probable (1792) et son possible engagement républicain (?) témoignent d'une capacité d'adaptation ou de discrétion remarquable. Sous la Restauration (à partir de 1814), son statut d'ancien officier de l'Ancien Régime lui aurait en principe ouvert des droits à pension — mais sa déclaration d'indigence de 1826 suggère qu'il n'en bénéficiait pas, ou insuffisamment. Il mourra sous Charles X (1824-1830), ayant traversé 7 régimes politiques différents.\nSource : Archives dép. Haute-Saône." },
+      { y:1826, title:"Déclaration d'indigence ✓",
+        tip:"[DOCUMENTÉ] Le 16 mars 1826, Louis-Constantin déclare par devant notaire qu'il habite depuis près de vingt ans au château du prince de Bauffremont à Scey-sur-Saône, qu'il ne possède rien et vit à la charge du prince. Fin de toute fortune familiale.\nSource : Archives dép. Haute-Saône (acte notarial cité)." },
+      { y:1827, title:"† Scey-sur-Saône ✓",
+        tip:"[DOCUMENTÉ] Louis-Constantin de Batz de Castelmore meurt le 14 décembre 1827 au château de Scey-sur-Saône, chez le prince de Bauffremont. Extinction de la lignée masculine de d'Artagnan. Il laisse deux filles, Louise-Constance (52 ans) et Aglaé-Rosalie (51 ans).\nSource : Acte de décès, Archives dép. Haute-Saône, commune de Scey-sur-Saône-et-Saint-Albin." },
+    ]
+  },
+
+  /* ── COMPAGNIES DES MOUSQUETAIRES ── */
+  {
+    id:'mousquet', cls:'row-mousquet', icon:'🔫',
+    label:"Cie des Mousquetaires",
+    sublabel:"Maison militaire du roi",
+    events:[
+      { y:1716, title:"Montesquiou d'Artagnan ✓",
+        tip:"[DOCUMENTÉ] 18 fév. 1716 : Joseph de Montesquiou, comte d'Artagnan (né le 27 mars 1651 à Artagnan, Hautes-Pyrénées — † 4 janv. 1729 à Paris, à 77 ans), reçoit par COMMISSION la capitainerie-lieutenance de la 1re compagnie (mousquetaires gris). Orphelin de père, il avait été élevé par son cousin Charles de Batz-Castelmore et se trouvait à Maastricht le jour de sa mort en 1673. Lieutenant général des armées depuis 1702, gouverneur de Nîmes et d'Arras, chevalier du Saint-Esprit (1724). Malgré la nomination de Canillac dès le 30 juin 1716, Montesquiou reste en poste jusqu'à sa mort en 1729 selon les sources généalogiques. Commandement symboliquement important : le nom d'Artagnan revient à la branche Montesquiou.\nPLACE DANS LA MAISON DU ROI : Les mousquetaires tenaient le 4e rang, derrière les gardes du corps (1er), les gendarmes de la garde (2e), et les chevau-légers (3e)." },
+      { y:1729, title:"Canillac ✓",
+        tip:"[DOCUMENTÉ] Jean de Montboissier-Beaufort-Canillac, comte de Canillac, capitaine-lieutenant effectif après la mort de Montesquiou (4 janv. 1729), lieutenant général et chevalier des ordres. Mourut à Paris le 10 avril 1729 — donc à peine trois mois après avoir pris le commandement.\nSource : Le Monde de d'Artagnan ; Wikipedia." },
+      { y:1729, title:"Montboissier ✓",
+        tip:"[DOCUMENTÉ] Philippe-Claude de Montboissier-Beaufort-Canillac, marquis de Montboissier, brigadier des armées, capitaine-lieutenant le 11 avril 1729. Maréchal de camp en 1734, puis lieutenant général. Se démit du commandement en 1754." },
+      { y:1754, title:"La Rivière ✓",
+        tip:"[DOCUMENTÉ] Joseph-Yves-Thibault-Hyacinthe, marquis de La Rivière, capitaine-lieutenant le 1er avril 1754. Se démet le 12 avril 1766, décède à Paris au Palais du Luxembourg en avril 1781.\nNOTE : c'est sous ce commandement que Louis-Gabriel de Batz servait comme capitaine de dragons dans les régiments de ligne — corps distinct de la Maison du roi." },
+      { y:1766, title:"Montboissier-Canillac ✓",
+        tip:"[DOCUMENTÉ] Philippe-Claude de Montboissier-Beaufort-Canillac (le fils), capitaine-lieutenant de 1766 jusqu'à la dissolution. Portalès lui est associé comme capitaine en titre de 1767 à 1776.\nLES DEUX COMPAGNIES : mousquetaires gris (1re cie, chevaux gris) et mousquetaires noirs (2e cie, chevaux noirs, créée 1663 de la cie Mazarin). Effectif total : ~500 hommes sous Louis XIV, réduit au XVIIIe s." },
+      { y:1776, title:"Dissolution Louis XVI ✓",
+        tip:"[DOCUMENTÉ] Ordonnance du 15 déc. 1775, effet au 1er janv. 1776 : Louis XVI supprime les deux compagnies pour raisons d'économie (réforme du comte de Saint-Germain, secrétaire d'État à la Guerre). Les membres reçoivent une indemnité et sont reclassés dans l'infanterie, la cavalerie ou les dragons. François de Portalès était capitaine-lieutenant lors de la suppression.\nIMPACT sur les Batz : Louis-Constantin venait précisément d'être aide-major au régiment Royal-Étranger (1773) — corps de ligne, hors Maison du roi. La suppression ne l'affecte pas directement mais ferme toute perspective de retour dans la garde." },
+      { y:1789, title:"Recréation éphémère ✓",
+        tip:"[DOCUMENTÉ] Les deux compagnies de mousquetaires sont recréées en 1789. Dissoutes à nouveau en 1792 avec toute la Maison militaire du roi lors de la suppression de la monarchie. Les mousquetaires, corps aristocratique par excellence, émigrent massivement." },
+      { y:1814, title:"Louis XVIII recrée ✓",
+        tip:"[DOCUMENTÉ] Louis XVIII reconstitue le corps des mousquetaires le 6 juillet 1814 lors de la première Restauration. Ils participent avec éclat à la cérémonie de translation des dépouilles de Louis XVI et Marie-Antoinette (21 janv. 1815). Géricault, le futur peintre du Radeau de la Méduse, servit comme mousquetaire gris en 1814.\nSource : Wikipedia ; Archives nationales." },
+      { y:1816, title:"Dissolution définitive ✓",
+        tip:"[DOCUMENTÉ] 1er janvier 1816 : dissolution définitive des compagnies de mousquetaires par ordonnance du 1er sept. 1815. Louis XVIII crée en parallèle une Garde royale de 25 000 hommes organisée en régiments (infanterie, cavalerie, artillerie) — structure moderne remplaçant les corps de la Maison. Fin de quatre siècles d'histoire des mousquetaires du roi.\nNOTE DYNASTIQUE : Louis-Constantin de Batz vit encore (il meurt en 1827). Aucun des Batz ne semble avoir servi dans cette ultime incarnation du corps." },
+    ]
+  },
+
+  /* ── VIE POLITIQUE FRANÇAISE ── */
+  {
+    id:'politique', cls:'row-politique', icon:'👑',
+    label:"Vie politique",
+    sublabel:"France · Régimes",
+    events:[
+      { y:1715, title:"† Louis XIV ✓",
+        tip:"[DOCUMENTÉ] Mort de Louis XIV le 1er septembre 1715. Régence de Philippe II d'Orléans pour Louis XV (5 ans). Fin de 72 ans de règne. La cour revient à Paris." },
+      { y:1723, title:"Louis XV règne ✓",
+        tip:"[DOCUMENTÉ] Majorité de Louis XV (13 ans, fév. 1723). Fin de la Régence. Le duc de Bourbon puis le Cardinal de Fleury (1726-1743) gouvernent de facto." },
+      { y:1743, title:"Louis XV seul ✓",
+        tip:"[DOCUMENTÉ] Mort du Cardinal de Fleury (janv. 1743). Louis XV gouverne seul comme son bisaïeul — mais sans en avoir la constance ni l'autorité." },
+      { y:1756, title:"Renversement alliances ✓",
+        tip:"[DOCUMENTÉ] Renversement des alliances (1756) : la France s'allie à l'Autriche (ennemie héréditaire) contre la Prusse et l'Angleterre. Traité de Versailles (1er mai 1756). Œuvre de Kaunitz et Mme de Pompadour." },
+      { y:1763, title:"Traité de Paris ✓",
+        tip:"[DOCUMENTÉ] Traité de Paris (10 fév. 1763) : humiliation française. La France cède le Canada, la Louisiane (à l'Espagne), la plupart de ses comptoirs indiens à l'Angleterre. Choiseul négocie. Début d'une obsession nationale de 'revanche'." },
+      { y:1774, title:"Louis XVI ✓",
+        tip:"[DOCUMENTÉ] Mort de Louis XV (10 mai 1774). Avènement de Louis XVI (20 ans). Turgot puis Necker aux finances. La France cherche à reconstruire sa puissance navale contre l'Angleterre." },
+      { y:1789, title:"Révolution ✓",
+        tip:"[DOCUMENTÉ] Révolution française : États Généraux (mai 1789), serment du Jeu de Paume (20 juin), prise de la Bastille (14 juil.), abolition des privilèges (4 août), Déclaration des droits (26 août). Fin de l'Ancien Régime." },
+      { y:1792, title:"République ✓",
+        tip:"[DOCUMENTÉ] Proclamation de la 1re République (21 sept. 1792). Exécution de Louis XVI (21 janv. 1793). La Terreur (1793-94) : Robespierre, Comité de Salut public. Thermidor (27 juil. 1794)." },
+      { y:1799, title:"Bonaparte / Consulat ✓",
+        tip:"[DOCUMENTÉ] Coup d'État du 18 brumaire (9-10 nov. 1799) : Bonaparte renverse le Directoire. Consulat (1799-1804). Napoléon Premier Consul puis Consul à vie (1802)." },
+      { y:1804, title:"Empire ✓",
+        tip:"[DOCUMENTÉ] Napoléon Ier couronné Empereur par le pape Pie VII à Notre-Dame (2 déc. 1804). Code civil promulgué (1804). La France à l'apogée de sa puissance continentale." },
+      { y:1814, title:"Restauration / Louis XVIII ✓",
+        tip:"[DOCUMENTÉ] Abdication de Napoléon (6 avr. 1814). Retour des Bourbons : Louis XVIII. Charte constitutionnelle. Les Cent-Jours (mars-juin 1815) : retour de Napoléon, défaite de Waterloo, seconde abdication (22 juin 1815)." },
+      { y:1824, title:"Charles X ✓",
+        tip:"[DOCUMENTÉ] Mort de Louis XVIII (16 sept. 1824). Avènement de Charles X, frère cadet, ultra-royaliste. Politique réactionnaire. Les libertés s'érodent progressivement." },
+      { y:1830, title:"Révolution juil. ✓",
+        tip:"[DOCUMENTÉ] Révolution de Juillet (27-29 juil. 1830 : les 'Trois Glorieuses'). Charles X abdique. Louis-Philippe Ier, roi des Français (monarchie de Juillet). Début d'une ère bourgeoise et libérale." },
+    ]
+  },
+
+  /* ── CONFLITS EN EUROPE ── */
+  {
+    id:'conflits', cls:'row-conflits', icon:'🏰',
+    label:"Conflits en Europe",
+    sublabel:"Guerres majeures",
+    events:[
+      { y:1713, title:"Utrecht / Rastatt ✓",
+        tip:"[DOCUMENTÉ] Traités d'Utrecht (1713) et Rastatt (1714) : fin de la Guerre de Succession d'Espagne. Philippe V roi d'Espagne. L'Angleterre gagne Gibraltar, Minorque, l'Acadie. La France épuisée." },
+      { y:1733, title:"Succession Pologne ✓",
+        tip:"[DOCUMENTÉ] Guerre de Succession de Pologne (1733-35) : la France soutient Stanislas Leszczyński contre les Habsbourg et la Russie. Traité de Vienne (1738) : la France gagne la Lorraine (réversion à la mort de Stanislas, 1766)." },
+      { y:1740, title:"Succession Autriche ✓",
+        tip:"[DOCUMENTÉ] Guerre de Succession d'Autriche (1740-48) : Frédéric II de Prusse envahit la Silésie. La France soutient la Prusse contre Marie-Thérèse. Bataille de Fontenoy (11 mai 1745) : Maurice de Saxe bat les Anglais. Paix d'Aix-la-Chapelle (1748)." },
+      { y:1756, title:"Guerre de Sept Ans ✓",
+        tip:"[DOCUMENTÉ] Guerre de Sept Ans (1756-63) : conflit mondial. En Europe : France et Autriche vs Prusse et Angleterre. Défaites françaises : Rossbach (1757), Minden (1759). Frédéric II résiste miraculeusement. Désastre colonial français." },
+      { y:1792, title:"Guerres Révolution ✓",
+        tip:"[DOCUMENTÉ] Guerres de la Révolution (1792-1802) : la France républicaine affronte les coalitions européennes. Victoire de Valmy (20 sept. 1792). Carnot organise les armées. Campagnes en Belgique, Hollande, Italie (Bonaparte, 1796-97), Égypte (1798-99)." },
+      { y:1805, title:"Austerlitz ✓",
+        tip:"[DOCUMENTÉ] Bataille d'Austerlitz (2 déc. 1805) : Napoléon écrase les armées autrichienne et russe. Apogée militaire napoléonienne. Traité de Presbourg : l'Autriche cède la Vénétie et le Tyrol." },
+      { y:1806, title:"Iéna / Auerstedt ✓",
+        tip:"[DOCUMENTÉ] Batailles d'Iéna et Auerstedt (14 oct. 1806) : Napoléon détruit la Prusse de Frédéric-Guillaume III. Berlin occupée. Blocus continental décrété (nov. 1806)." },
+      { y:1812, title:"Campagne Russie ✓",
+        tip:"[DOCUMENTÉ] Campagne de Russie (1812) : la Grande Armée (600 000 hommes) franchit le Niémen (juin). Borodino (7 sept.), Moscou incendiée. Retraite catastrophique : moins de 100 000 hommes survivants en décembre." },
+      { y:1813, title:"Leipzig ✓",
+        tip:"[DOCUMENTÉ] Bataille des Nations à Leipzig (16-19 oct. 1813) : Napoléon écrasé par les coalitions autrichienne, prussienne, russe et suédoise. Retrait au-delà du Rhin. Début de la fin." },
+      { y:1815, title:"Waterloo ✓",
+        tip:"[DOCUMENTÉ] Bataille de Waterloo (18 juin 1815) : Napoléon battu par Wellington et Blücher. Seconde abdication (22 juin). Exil à Sainte-Hélène. Congrès de Vienne (1814-15) : redessine l'Europe." },
+    ]
+  },
+
+  /* ── DÉCLIN À L'EST (INDE / CANADA) ── */
+  {
+    id:'declin', cls:'row-declin', icon:'📉',
+    label:"Déclin à l'Est",
+    sublabel:"Inde · Canada · Antilles",
+    events:[
+      { y:1749, title:"Dupleix au zénith ✓",
+        tip:"[DOCUMENTÉ] Joseph-François Dupleix, gouverneur général des comptoirs français en Inde (1742-1754), contrôle à son apogée (1749-1751) la moitié du Deccan par un système d'alliances avec les princes indiens. Pionnier du 'pouvoir indirect' européen en Inde. Rappelé en France en 1754 par la Compagnie des Indes qui refusait ses dépenses : faute stratégique majeure." },
+      { y:1754, title:"Rappel Dupleix ✓",
+        tip:"[DOCUMENTÉ] Rappel de Dupleix en France (août 1754) : la Compagnie des Indes, soucieuse de profits commerciaux, sacrifie sa vision impériale. Il mourra ruiné en 1763. Robert Clive, son homologue britannique à la Compagnie des Indes orientales (EIC), poursuit au contraire une politique d'expansion agressive." },
+      { y:1713, title:"Utrecht : bilan colonial ✓",
+        tip:"[DOCUMENTÉ] Traités d'Utrecht (1713) : la France cède à l'Angleterre l'Acadie, Terre-Neuve, la baie d'Hudson et Saint-Christophe (Antilles). Elle conserve le Canada (Nouvelle-France), le cap Breton (Louisbourg) et ses Antilles principales. Bilan en demi-teinte : le dispositif colonial français reste intact mais la pression anglaise s'accroît sur toutes les frontières coloniales." },
+      { y:1720, title:"Louisbourg ✓",
+        tip:"[DOCUMENTÉ] Construction de la forteresse de Louisbourg (île du Cap-Breton, 1720-1740) : clef d'entrée du Saint-Laurent et pivot défensif de la Nouvelle-France. Investissement colossal (~30 millions de livres). Prise par les Anglais en 1745, restituée en 1748 par la paix d'Aix-la-Chapelle, puis reprise définitivement en 1758." },
+      { y:1730, title:"Dupleix à Pondichéry ✓",
+        tip:"[DOCUMENTÉ] Joseph-François Dupleix arrive à Pondichéry en 1730 comme membre du Conseil supérieur, puis directeur à Chandernagore (1731-1741). Il observe la désagrégation de l'Empire moghol et conçoit une stratégie d'expansion par alliances avec les princes indiens. Il devient gouverneur général en 1742." },
+      { y:1744, title:"Guerre de Succession Autriche : Inde ✓",
+        tip:"[DOCUMENTÉ] La Guerre de Succession d'Autriche (1740-48) s'étend à l'Inde : Dupleix prend Madras aux Anglais (1746) grâce à l'escadre de La Bourdonnais. Mais La Bourdonnais et Dupleix s'opposent sur la stratégie (rançon vs occupation). Madras est restituée par la paix d'Aix-la-Chapelle (1748). Occasion manquée." },
+      { y:1749, title:"Dupleix au zénith ✓",
+        tip:"[DOCUMENTÉ] Joseph-François Dupleix, gouverneur général des comptoirs français en Inde (1742-1754), contrôle à son apogée (1749-1751) la moitié du Deccan par un système d'alliances avec les princes indiens. Il place ses candidats sur les trônes du Deccan et du Carnatic. Robert Clive, son homologue britannique, commence à lui opposer la même méthode. Pionnier du 'pouvoir indirect' européen en Inde." },
+      { y:1754, title:"Rappel Dupleix ✓",
+        tip:"[DOCUMENTÉ] Rappel de Dupleix en France (août 1754) : la Compagnie des Indes, soucieuse de profits commerciaux, sacrifie sa vision impériale pour signer la paix avec les Anglais. Il mourra ruiné en 1763. Clive, lui, reçoit des renforts et des pouvoirs accrus. La asymétrie de soutien métropolitain est décisive." },
+      { y:1756, title:"Guerre de Sept Ans : débuts ✓",
+        tip:"[DOCUMENTÉ] Guerre de Sept Ans (1756-1763) : premier conflit véritablement mondial. En Amérique du Nord : Montcalm commande les troupes françaises de Nouvelle-France depuis mars 1756. Premiers succès : Fort Oswego (août 1756), Fort William Henry (août 1757). Mais les Anglais envoient 50 000 hommes ; la France n'envoie que ~8 000 renforts. Choix fatal : priorité au continent européen sur les colonies." },
+      { y:1757, title:"Plassey / Rossbach ✓",
+        tip:"[DOCUMENTÉ] Double désastre : 23 juin 1757, Plassey (Inde) — Robert Clive bat le Nawab du Bengale allié aux Français : l'EIC s'empare du Bengale. 5 nov. 1757, Rossbach (Allemagne) — Frédéric II écrase Soubise malgré la supériorité française. Les deux défaites illustrent l'impuissance française sur deux fronts simultanés." },
+      { y:1759, title:"Année catastrophique ✓",
+        tip:"[DOCUMENTÉ] 'Annus mirabilis' britannique, annus horribilis français. 13 sept. 1759 : Bataille des Plaines d'Abraham — Wolfe bat Montcalm devant Québec ; les deux généraux morts au combat. 20 nov. 1759 : Bataille de la baie de Quiberon — l'amiral Hawke détruit la flotte française de Conflans, interdisant tout renfort vers la Nouvelle-France. Québec tombe ; Montréal suivra en 1760." },
+      { y:1761, title:"Pondichéry capitule ✓",
+        tip:"[DOCUMENTÉ] 16 janvier 1761 : Lally-Tollendal capitule à Pondichéry après un siège de huit mois. Dernière grande position française en Inde. Lally-Tollendal sera exécuté en France (1766), condamné pour 'trahison', jugement injuste révisé en 1778. Chandernagore avait déjà été prise par Clive en 1757." },
+      { y:1763, title:"Traité de Paris : désastre ✓",
+        tip:"[DOCUMENTÉ] Traité de Paris (10 fév. 1763) : la France cède le Canada entier, la Louisiane orientale, la plupart de ses comptoirs indiens (sauf cinq sans garnison). Elle choisit de conserver la Guadeloupe et la Martinique (sucre) plutôt que le Canada (fourrures). Choiseul négocie. Voltaire : 'quelques arpents de neige.' Chateaubriand y verra 'la perte la plus lourde de notre histoire.' Obsession nationale de revanche." },
+      { y:1778, title:"Reprise Pondichéry (~) ✓",
+        tip:"[DOCUMENTÉ] La France reprend Pondichéry en 1778 lors de l'entrée en guerre contre l'Angleterre. Mais la position reste précaire, dépendante de la maîtrise navale. Les Anglais reprennent la ville en 1779 puis la France la recouvre à nouveau par le traité de 1783." },
+      { y:1782, title:"Saintes : revers naval ✓",
+        tip:"[DOCUMENTÉ] Bataille des Saintes (12 avr. 1782, Antilles) : l'amiral Rodney bat et capture le comte de Grasse, détruisant 7 vaisseaux français. Échec du projet franco-espagnol d'invasion de la Jamaïque. La Royal Navy reprend l'avantage naval aux Antilles, contrebalançant les succès de Suffren aux Indes." },
+    ]
+  },
+
+  /* ── REDRESSEMENT À L'OUEST (AMÉRIQUE / SUFFREN) ── */
+  {
+    id:'amerique', cls:'row-amerique', icon:'🌊',
+    label:"Redressement à l'Ouest",
+    sublabel:"Amérique · Suffren · Revanche",
+    events:[
+      { y:1763, title:"Obsession revanche ✓",
+        tip:"[DOCUMENTÉ] Après le traité de Paris (1763), la France entreprend methodiquement sa revanche. Choiseul reconstruit la marine royale : de 40 à 70 vaisseaux de ligne en dix ans. Le ministre de Castries (marine) et Vergennes (affaires étrangères) incarneront cette stratégie sous Louis XVI. Objectif : briser la suprématie maritime britannique." },
+      { y:1775, title:"Aide secrète insurgents ✓",
+        tip:"[DOCUMENTÉ] Vergennes et Beaumarchais organisent dès 1775-76 une aide secrète aux insurgents américains via la société fictive 'Rodrigue Hortalez & Cie' : armes, munitions, uniformes acheminés clandestinement. Beaumarchais avance 1 million de livres. La France prépare sa revanche sans déclaration de guerre." },
+      { y:1776, title:"Déclaration Indépendance ✓",
+        tip:"[DOCUMENTÉ] Déclaration d'Indépendance américaine (4 juil. 1776). Jefferson, Franklin, Adams. Benjamin Franklin arrive à Paris en déc. 1776 : accueilli triomphalement, il devient l'icône des Lumières à Versailles. Louis XVI hésite — il s'agit de soutenir une révolution contre un monarque légitime." },
+      { y:1777, title:"Lafayette en Amérique ✓",
+        tip:"[DOCUMENTÉ] Le marquis de Lafayette (19 ans) part clandestinement pour l'Amérique (avr. 1777) malgré l'interdiction royale. Nommé major-général par le Congrès. Participe à la bataille de Brandywine (sept. 1777). Devient l'intermédiaire privilégié entre Washington et Versailles. Son départ inspire d'autres volontaires français." },
+      { y:1778, title:"Alliance franco-américaine ✓",
+        tip:"[DOCUMENTÉ] Traité d'alliance franco-américain (6 fév. 1778) : Louis XVI reconnaît les États-Unis. Vergennes architecte de l'alliance. La France entre en guerre contre l'Angleterre. L'Espagne rejoint en 1779, les Provinces-Unies en 1780 : l'Angleterre isolée face à une coalition de quatre puissances navales." },
+      { y:1780, title:"Rochambeau à Newport ✓",
+        tip:"[DOCUMENTÉ] Corps expéditionnaire de Rochambeau (5 500 hommes) débarque à Newport (juil. 1780). Coordination avec Washington. Lafayette fait la navette entre les deux commandements. La France finance aussi : 6 millions de livres de subsides au Congrès américain, plus des prêts néerlandais garantis par Paris." },
+      { y:1781, title:"Suffren : La Praya ✓",
+        tip:"[DOCUMENTÉ] 16 avr. 1781 : Suffren attaque l'escadre de Johnstone à La Praya (Cap-Vert) avec une audace totale — il attaque dans un port neutre portugais. Il sauve ainsi Le Cap d'une prise britannique, arrivant le premier le 20 juin 1781. Pierre-André de Suffren (51 ans), bailli de Malte, 22 campagnes, officier provençal au tempérament volcanique — 'aimé de personne, admiré de tous' (Las Cases)." },
+      { y:1781, title:"Chesapeake / Yorktown ✓",
+        tip:"[DOCUMENTÉ] 5 sept. 1781 : Bataille de la baie de Chesapeake — De Grasse (28 vaisseaux) met en fuite l'escadre anglaise de Graves et bloque Yorktown par mer. Décisif : Cornwallis ne peut être secouru. 19 oct. 1781 : Capitulation de Yorktown — Cornwallis remet son épée. Washington, Rochambeau et De Grasse : victoire stratégique franco-américaine. L'Angleterre perd la guerre d'Amérique." },
+      { y:1782, title:"Suffren : 4 batailles ✓",
+        tip:"[DOCUMENTÉ] Suffren livre quatre batailles successives contre l'amiral Hugues dans l'océan Indien : Sadras (17 fév. 1782), Provédien (12 avr.), Negapatam (6 juil.), Trincomalé (3 sept.). Aucune victoire décisive mais Suffren préserve ses forces, reprend la base hollandaise de Trincomalé et allie le sultan Hayder Ali de Mysore aux Français. Tactique révolutionnaire : il cherche la destruction de l'ennemi, rompant avec la doctrine défensive française." },
+      { y:1783, title:"Suffren : Gondelour ✓",
+        tip:"[DOCUMENTÉ] 20 juin 1783 : Bataille de Gondelour — Suffren repousse Hugues avec des forces inférieures et sauve Bussy-Castelnau assiégé. Son plus beau combat selon les historiens. 29 juin 1783 : une frégate apporte la nouvelle de la paix signée à Versailles (20 janv. 1783). Suffren rentre en France : vice-amiral, ordre du Saint-Esprit. Il mourra en 1788. L'amiral Cartex le range avec Ruyter et Nelson parmi les trois plus grands marins de l'histoire de la voile." },
+      { y:1783, title:"Traité Versailles ✓",
+        tip:"[DOCUMENTÉ] Traité de Paris / Versailles (3 sept. 1783) : l'Angleterre reconnaît l'indépendance américaine. La France récupère Tobago, le Sénégal, et voit ses comptoirs en Inde restitués. Revanche partielle mais réelle sur 1763. Vergennes considère l'opération comme un succès stratégique. Coût : 1,3 milliard de livres de dette supplémentaire — facteur direct de la crise financière qui mènera à 1789. Louis-Gabriel de Batz meurt le 15 août, quinze jours AVANT la signature." },
+    ]
+  },
+
+  /* ── RÉVOLUTION FRANÇAISE ── */
+  {
+    id:'revolution', cls:'row-revolution', icon:'🔥',
+    label:"Révolution française",
+    sublabel:"1789–1799",
+    events:[
+      { y:1789, title:"États Généraux ✓",
+        tip:"[DOCUMENTÉ] États Généraux convoqués par Louis XVI (5 mai 1789). Serment du Jeu de Paume (20 juin). Prise de la Bastille (14 juil.). Nuit du 4 août : abolition des privilèges féodaux. Déclaration des droits de l'Homme (26 août)." },
+      { y:1791, title:"Fuite à Varennes ✓",
+        tip:"[DOCUMENTÉ] Fuite de Louis XVI arrêtée à Varennes (21 juin 1791). Constitution (sept. 1791) : monarchie constitutionnelle. Mais la confiance envers le roi est brisée." },
+      { y:1792, title:"Guerre / République ✓",
+        tip:"[DOCUMENTÉ] Déclaration de guerre à l'Autriche (20 avr. 1792). Valmy (20 sept.) : Kellermann et Dumouriez stoppent les Prussiens. Proclamation de la 1re République (21 sept. 1792)." },
+      { y:1793, title:"Terreur ✓",
+        tip:"[DOCUMENTÉ] Exécution de Louis XVI (21 janv. 1793) puis Marie-Antoinette (oct. 1793). Comité de Salut public : Robespierre, Saint-Just, Couthon. Levée en masse (août 1793) : 750 000 hommes. Vendée : guerre civile. ~40 000 exécutés sous la Terreur." },
+      { y:1794, title:"Thermidor ✓",
+        tip:"[DOCUMENTÉ] Coup de Thermidor (9 thermidor an II, 27 juil. 1794) : chute et exécution de Robespierre. Fin de la Terreur. Réaction thermidorienne. Directoire (1795-1799) : régime instable et corrompu." },
+      { y:1799, title:"Brumaire ✓",
+        tip:"[DOCUMENTÉ] Coup d'État du 18 brumaire (9-10 nov. 1799) : Bonaparte renverse le Directoire avec l'appui de Sieyès et de son frère Lucien. Fin de la Révolution. Consulat : stabilisation autoritaire." },
+    ]
+  },
+
+  /* ── EMPIRE NAPOLÉONIEN ── */
+  {
+    id:'empire', cls:'row-empire', icon:'🦅',
+    label:"Empire napoléonien",
+    sublabel:"1800–1815",
+    events:[
+      { y:1800, title:"Marengo ✓",
+        tip:"[DOCUMENTÉ] Bataille de Marengo (14 juin 1800) : Bonaparte bat les Autrichiens en Italie du Nord. Paix de Lunéville (1801) : l'Autriche reconnaît les conquêtes françaises. Paix d'Amiens avec l'Angleterre (1802, éphémère)." },
+      { y:1804, title:"Code civil / Couronnement ✓",
+        tip:"[DOCUMENTÉ] Code civil promulgué (21 mars 1804) : héritage durable de la Révolution, toujours en vigueur. Couronnement de Napoléon Ier (2 déc. 1804) à Notre-Dame. Pie VII présent." },
+      { y:1805, title:"Trafalgar / Austerlitz ✓",
+        tip:"[DOCUMENTÉ] Bataille de Trafalgar (21 oct. 1805) : Nelson détruit la flotte franco-espagnole. Fin de toute ambition navale française. Mais Austerlitz (2 déc. 1805) écrase Autriche et Russie." },
+      { y:1807, title:"Tilsit ✓",
+        tip:"[DOCUMENTÉ] Traités de Tilsit (juil. 1807) : Napoléon et Alexandre Ier de Russie se partagent l'Europe sur un radeau sur le Niémen. La Prusse humiliée. Apogée de l'Empire : 44 millions de sujets directs." },
+      { y:1808, title:"Espagne ✓",
+        tip:"[DOCUMENTÉ] Guerre d'Espagne (1808-1814) : Napoléon impose son frère Joseph comme roi. Résistance populaire (Dos de Mayo, 2 mai 1808). Wellington débarque au Portugal. 'Ulcère espagnol' qui saigne l'Empire." },
+      { y:1812, title:"Moscou / Retraite ✓",
+        tip:"[DOCUMENTÉ] La Grande Armée entre à Moscou (14 sept. 1812) : la ville est incendiée par les Russes. Alexandre Ier refuse de traiter. Retraite catastrophique : froid, Bérézina (nov.), ~400 000 morts ou prisonniers sur 600 000 partis." },
+      { y:1814, title:"Abdication / Elbe ✓",
+        tip:"[DOCUMENTÉ] Les Alliés entrent à Paris (31 mars 1814). Abdication de Napoléon à Fontainebleau (6 avr.). Exil à l'île d'Elbe. Traité de Paris (30 mai) : la France revient aux frontières de 1792." },
+      { y:1815, title:"Cent-Jours / Waterloo ✓",
+        tip:"[DOCUMENTÉ] Retour de l'île d'Elbe (1er mars 1815). Les Cent-Jours. Waterloo (18 juin 1815) : défaite définitive face à Wellington et Blücher. Exil à Sainte-Hélène. Napoléon meurt le 5 mai 1821." },
+    ]
+  },
+];
+
+/* ── BUILD ── */
+function build() {
+  const container = document.getElementById('tl');
+  const LABEL_W = 165;
+
+  /* era band */
+  const band = document.createElement('div');
+  band.className = 'era-band';
+  const sp = document.createElement('div');
+  sp.className = 'era-spacer';
+  band.appendChild(sp);
+  ERAS.forEach(era => {
+    const span = era.end - era.start + 1;
+    const div = document.createElement('div');
+    div.className = 'era-block';
+    div.style.width = (span * CELL_W) + 'px';
+    div.style.minWidth = (span * CELL_W) + 'px';
+    div.style.background = era.color;
+    div.style.color = era.fg;
+    div.textContent = era.label;
+    band.appendChild(div);
+  });
+  container.appendChild(band);
+
+  /* year header */
+  const hrow = document.createElement('div');
+  hrow.className = 'year-header-row';
+  const lh = document.createElement('div');
+  lh.className = 'row-label-head';
+  lh.textContent = 'THÈME / ANNÉES →';
+  hrow.appendChild(lh);
+  YEARS.forEach(y => {
+    const c = document.createElement('div');
+    c.className = 'year-cell-head' + (y % 10 === 0 ? ' decade' : '');
+    c.textContent = y;
+    hrow.appendChild(c);
+  });
+  container.appendChild(hrow);
+
+  /* data rows */
+  ROWS.forEach(row => {
+    const byYear = {};
+    row.events.forEach(e => {
+      if (!byYear[e.y]) byYear[e.y] = [];
+      byYear[e.y].push(e);
+    });
+
+    const trow = document.createElement('div');
+    trow.className = 'tl-row';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'row-label';
+    lbl.innerHTML = `<span class="row-label-icon">${row.icon}</span>
+      <span class="row-label-text">${row.label}<em>${row.sublabel}</em></span>`;
+    trow.appendChild(lbl);
+
+    YEARS.forEach(y => {
+      const cell = document.createElement('div');
+      cell.className = 'year-cell' + (y % 10 === 0 ? ' decade-col' : '');
+      if (byYear[y]) {
+        byYear[y].forEach(ev => {
+          const div = document.createElement('div');
+          div.className = `event ${row.cls}`;
+          div.setAttribute('data-tip', ev.tip);
+          div.innerHTML = `<strong>${ev.title}</strong>`;
+          cell.appendChild(div);
+        });
+      }
+      trow.appendChild(cell);
+    });
+    container.appendChild(trow);
+  });
+}
+
+build();
+attachNotes();
+
+/* ═══════════════════════════════════════════════
+   SYSTÈME DE NOTES PERSONNELLES
+   - Clic simple   → affiche la bulle fixée
+   - Double-clic   → ouvre l'éditeur de note
+   - Notes sauvegardées dans localStorage Edge
+   ═══════════════════════════════════════════════ */
+function attachNotes() {
+
+  const st = document.createElement('style');
+  st.textContent = `
+    .bubble-fixed {
+      position: fixed;
+      background: #0D0B05;
+      color: #F2E8D0;
+      border: 1px solid #C9A84C;
+      border-radius: 6px;
+      padding: 0.7rem 0.9rem;
+      font-size: 0.58rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      max-width: 260px;
+      z-index: 200;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.9);
+      font-family: 'Libre Baskerville', serif;
+      cursor: default;
+    }
+    .bubble-fixed .bf-close {
+      display: block;
+      text-align: right;
+      color: #C9A84C;
+      font-size: 0.7rem;
+      cursor: pointer;
+      margin-bottom: 0.3rem;
+      font-family: 'Cinzel', serif;
+    }
+    .bubble-fixed .bf-note {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #3A3020;
+      color: #E8D08A;
+      font-style: italic;
+      white-space: pre-wrap;
+    }
+    .bubble-fixed .bf-note-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      color: #C9A84C;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .event.has-note::after {
+      content: '✎';
+      position: absolute;
+      top: 1px; right: 2px;
+      font-size: 0.55rem;
+      color: #C9A84C;
+      pointer-events: none;
+    }
+    .note-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .note-modal {
+      background: #0F0D06;
+      border: 1px solid #C9A84C;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      width: min(420px, 90vw);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.95);
+      font-family: 'Libre Baskerville', serif;
+    }
+    .note-modal h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: #C9A84C;
+      margin-bottom: 0.3rem;
+    }
+    .note-modal .nm-event-title {
+      font-size: 0.62rem;
+      color: #E8D08A;
+      margin-bottom: 0.8rem;
+      font-style: italic;
+    }
+    .note-modal textarea {
+      width: 100%;
+      height: 120px;
+      background: #1A1408;
+      color: #F2E8D0;
+      border: 1px solid #3A3020;
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-family: 'Libre Baskerville', serif;
+      font-size: 0.6rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+    .note-modal textarea:focus { border-color: #C9A84C; }
+    .note-modal .nm-hint {
+      font-size: 0.5rem;
+      color: #6A5A30;
+      margin-top: 0.3rem;
+      font-style: italic;
+    }
+    .note-modal .nm-buttons {
+      display: flex; gap: 0.6rem;
+      margin-top: 0.8rem; justify-content: flex-end;
+    }
+    .note-modal button {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      padding: 0.35rem 0.8rem;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid #3A3020;
+      background: #1A1408;
+      color: #E8D08A;
+      transition: background 0.15s;
+    }
+    .note-modal button:hover { background: #2A2010; }
+    .note-modal button.nm-save {
+      background: #3A2800;
+      border-color: #C9A84C;
+      color: #C9A84C;
+    }
+    .note-modal button.nm-save:hover { background: #4A3800; }
+    .note-modal button.nm-delete {
+      color: #A05050;
+      border-color: #501010;
+    }
+  `;
+  document.head.appendChild(st);
+
+  const PREFIX = 'frise1710_note_';
+
+  function noteKey(el) {
+    const row = el.closest('.tl-row');
+    const rowLabel = row ? row.querySelector('.row-label-text') : null;
+    const rowId = rowLabel ? rowLabel.textContent.trim().slice(0,20) : 'r';
+    const tip = el.getAttribute('data-tip') || '';
+    return PREFIX + rowId + '_' + tip.slice(0,30).replace(/\s+/g,'_');
+  }
+
+  document.querySelectorAll('.event[data-tip]').forEach(el => {
+    try {
+      if (localStorage.getItem(noteKey(el))) el.classList.add('has-note');
+    } catch(e) {}
+  });
+
+  let currentBubble = null;
+  function closeBubble() {
+    if (currentBubble) { currentBubble.remove(); currentBubble = null; }
+  }
+
+  function showBubble(el, x, y) {
+    closeBubble();
+    const tip = el.getAttribute('data-tip') || '';
+    const k = noteKey(el);
+    let userNote = '';
+    try { userNote = localStorage.getItem(k) || ''; } catch(e) {}
+
+    const div = document.createElement('div');
+    div.className = 'bubble-fixed';
+    div.innerHTML = `<span class="bf-close">✕ fermer</span>${tip}` +
+      (userNote ? `<div class="bf-note"><span class="bf-note-label">✎ VOTRE NOTE</span>${userNote}</div>` : '');
+
+    div.style.left = Math.min(x + 10, window.innerWidth - 280) + 'px';
+    div.style.top  = Math.min(y + 10, window.innerHeight - 200) + 'px';
+    document.body.appendChild(div);
+    currentBubble = div;
+    div.querySelector('.bf-close').addEventListener('click', closeBubble);
+  }
+
+  function openEditor(el) {
+    closeBubble();
+    const title = el.querySelector('strong') ? el.querySelector('strong').textContent : '';
+    const k = noteKey(el);
+    let existing = '';
+    try { existing = localStorage.getItem(k) || ''; } catch(e) {}
+
+    const overlay = document.createElement('div');
+    overlay.className = 'note-overlay';
+    overlay.innerHTML = `
+      <div class="note-modal">
+        <h3>✎ NOTE PERSONNELLE</h3>
+        <div class="nm-event-title">${title}</div>
+        <textarea placeholder="Saisissez votre commentaire, source, hypothèse…">${existing}</textarea>
+        <div class="nm-hint">Sauvegardé dans Edge · Persistant entre les sessions</div>
+        <div class="nm-buttons">
+          <button class="nm-delete">Supprimer la note</button>
+          <button class="nm-cancel">Annuler</button>
+          <button class="nm-save">Sauvegarder ✓</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const ta = overlay.querySelector('textarea');
+    ta.focus();
+
+    overlay.querySelector('.nm-save').addEventListener('click', () => {
+      const val = ta.value.trim();
+      try {
+        if (val) { localStorage.setItem(k, val); el.classList.add('has-note'); }
+        else     { localStorage.removeItem(k);   el.classList.remove('has-note'); }
+      } catch(e) { alert('Sauvegarde impossible (localStorage non disponible).'); }
+      overlay.remove();
+    });
+    overlay.querySelector('.nm-cancel').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('.nm-delete').addEventListener('click', () => {
+      try { localStorage.removeItem(k); el.classList.remove('has-note'); } catch(e) {}
+      overlay.remove();
+    });
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) overlay.querySelector('.nm-save').click();
+    });
+  }
+
+  document.querySelectorAll('.event[data-tip]').forEach(el => {
+    let clickTimer = null;
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      clickTimer = setTimeout(() => {
+        showBubble(el, e.clientX, e.clientY);
+        clickTimer = null;
+      }, 220);
+    });
+    el.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+      openEditor(el);
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (currentBubble && !currentBubble.contains(e.target)) closeBubble();
+  });
+
+  const hint = document.createElement('div');
+  hint.style.cssText = 'background:#100E06;border-bottom:1px solid #2A2010;padding:0.4rem 1.5rem;text-align:center;font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.1em;color:#6A5A30;';
+  hint.textContent = 'CLIC = afficher la bulle   ·   DOUBLE-CLIC = ajouter / modifier votre note personnelle   ·   ✎ = note existante';
+  document.querySelector('.legend').after(hint);
+}
+</script>
+</body>
+</html>

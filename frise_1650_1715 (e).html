@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frise chronologique 1650–1715</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --gold:    #C9A84C;
+    --gold-lt: #E8D08A;
+    --ink:     #1A1208;
+    --parch:   #F2E8D0;
+    --parch-dk:#E0D0A8;
+    --rust:    #8B3A1A;
+    --navy:    #1B2A4A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', serif;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0D0C07 0%, #1A1208 60%, #0D0A04 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+  }
+  header::before, header::after {
+    content: '✦';
+    position: absolute;
+    color: var(--gold);
+    font-size: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  header::before { left: 2rem; }
+  header::after  { right: 2rem; }
+  .header-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.3rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: var(--parch);
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+  }
+  header h1 span { color: var(--gold); }
+  .header-sub {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--gold-lt);
+    opacity: 0.75;
+    margin-top: 0.5rem;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    background: #100E06;
+    border-bottom: 1px solid #3A3020;
+    padding: 0.7rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.5rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--parch-dk);
+    opacity: 0.9;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-sep {
+    border-left: 1px solid #3A3020;
+    padding-left: 1.2rem;
+    margin-left: 0.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .legend-sep span {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--gold-lt);
+  }
+  .legend-sep .lbl {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* ── WRAPPER ── */
+  .timeline-wrapper {
+    overflow-x: auto;
+    background: var(--ink);
+    padding: 0 0 2rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .timeline-wrapper::-webkit-scrollbar { height: 6px; }
+  .timeline-wrapper::-webkit-scrollbar-track { background: #0D0C07; }
+  .timeline-wrapper::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+  /* ── YEAR HEADER ROW ── */
+  .year-header-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid #2A2010;
+    background: #0D0C07;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-width: max-content;
+  }
+  .row-label-head {
+    min-width: 160px;
+    width: 160px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    border-right: 1px solid #2A2010;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .year-cell-head {
+    width: 70px;
+    min-width: 70px;
+    padding: 0.6rem 0.2rem;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    color: var(--gold-lt);
+    border-right: 1px solid #1E1A10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .year-cell-head.decade {
+    color: var(--gold);
+    font-weight: 700;
+    border-right: 2px solid #3A3020;
+  }
+
+  /* ── DATA ROWS ── */
+  .tl-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid #1A1408;
+    min-width: max-content;
+  }
+  .tl-row:hover { background: rgba(201,168,76,0.025); }
+
+  .row-label {
+    min-width: 160px;
+    width: 160px;
+    padding: 0.5rem 0.8rem;
+    border-right: 1px solid #2A2010;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: #0F0D06;
+    flex-shrink: 0;
+  }
+  .row-label-icon { font-size: 0.95rem; flex-shrink: 0; }
+  .row-label-text {
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.07em;
+    line-height: 1.4;
+    color: var(--parch-dk);
+  }
+  .row-label-text em {
+    display: block;
+    font-family: 'Libre Baskerville', serif;
+    font-style: italic;
+    font-size: 0.51rem;
+    color: var(--gold);
+    opacity: 0.8;
+    letter-spacing: 0.03em;
+    margin-top: 0.15rem;
+  }
+
+  /* ── YEAR CELLS ── */
+  .year-cell {
+    width: 70px;
+    min-width: 70px;
+    border-right: 1px solid #1A1408;
+    padding: 0.3rem 0.25rem;
+    flex-shrink: 0;
+  }
+  .year-cell.decade-col { border-right: 2px solid #2A2010; }
+
+  /* ── EVENTS ── */
+  .event {
+    border-radius: 3px;
+    padding: 0.25rem 0.32rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.515rem;
+    line-height: 1.35;
+    cursor: default;
+    transition: filter 0.15s, transform 0.15s;
+    position: relative;
+    border-left: 2px solid var(--row-bd);
+    background: var(--row-bg);
+    color: var(--row-fg);
+  }
+  .event:hover {
+    filter: brightness(1.3);
+    transform: scale(1.05);
+    z-index: 50;
+  }
+  .event strong {
+    display: block;
+    font-size: 0.52rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.08rem;
+  }
+
+  /* Row colour themes */
+  .row-dartagnan-l { --row-bg:#3A200A; --row-fg:#F0C88A; --row-bd:#8A6030; }
+  .row-dartagnan-c { --row-bg:#2A1A06; --row-fg:#DEB870; --row-bd:#6A4015; }
+  .row-politique   { --row-bg:#0A1A36; --row-fg:#A8C0EC; --row-bd:#1E3A70; }
+  .row-camisards   { --row-bg:#2A1A2A; --row-fg:#D4A8D4; --row-bd:#6A2A6A; }
+  .row-conflits    { --row-bg:#3A0A0A; --row-fg:#E8A8A8; --row-bd:#701E1E; }
+  .row-inde        { --row-bg:#0A2A14; --row-fg:#80C898; --row-bd:#1E5A30; }
+  .row-siam        { --row-bg:#1A2A0A; --row-fg:#A8C878; --row-bd:#3A5A1E; }
+  .row-chine       { --row-bg:#2A1A00; --row-fg:#E8C070; --row-bd:#5A3A00; }
+  .row-russie      { --row-bg:#1A0A2A; --row-fg:#C0A8E8; --row-bd:#3A1E5A; }
+
+  /* ── TOOLTIP ── */
+  .event[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 5px);
+    transform: translateX(-50%);
+    background: #0D0B05;
+    color: var(--parch);
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.56rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    max-width: 210px;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.85);
+    font-family: 'Libre Baskerville', serif;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0D0C07;
+    border-top: 1px solid #2A2010;
+    padding: 1rem 2rem;
+    text-align: center;
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--gold);
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="header-eyebrow">Règne de Louis XIV · Expansion française · Guerres d'Europe</p>
+  <h1>Frise chronologique <span>1650 – 1715</span></h1>
+  <p class="header-sub">Les fils de d'Artagnan · Politique royale · Conflits européens · Asie · Russie</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#8A6030"></div>Louis I d'Artagnan l'Aîné</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6A4015"></div>Louis II d'Artagnan le Cadet</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1E3A70"></div>Vie politique française</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6A2A6A"></div>Guerre des Camisards</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#701E1E"></div>Conflits en Europe</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1E5A30"></div>Expansion vers l'Inde</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3A5A1E"></div>Expansion vers le Siam</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5A3A00"></div>Expansion vers la Chine</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3A1E5A"></div>Expansion vers la Russie</div>
+  <div class="legend-sep">
+    <span class="lbl">FIABILITÉ :</span>
+    <span>✓ documenté</span>
+    <span>(~) probable</span>
+    <span>(?) incertain</span>
+  </div>
+</div>
+
+<div class="timeline-wrapper">
+  <div id="tl"></div>
+</div>
+
+<footer>
+  Survolez les événements pour les détails · Sources : SHD, Soc. archéol. du Gers, Gallica, Universalis · © 2026
+</footer>
+
+<script>
+const YEARS = Array.from({length: 66}, (_, i) => 1650 + i);
+
+const ROWS = [
+  /* ── LOUIS I L'AÎNÉ ── */
+  {
+    id: 'dartagnan-l',
+    label: "Louis I d'Artagnan",
+    sublabel: "l'Aîné (1660–1709)",
+    icon: '⚔️',
+    cls: 'row-dartagnan-l',
+    events: [
+      { y:1660, title:'Naissance ✓',
+        tip:'[DOCUMENTÉ] Louis de Batz de Castelmore dit l\'Aîné, né en 1660. Fils aîné de Charles de Batz et d\'Anne-Charlotte Boyer de Chanlecy. Les deux fils portaient le prénom Louis, en l\'honneur de Louis XIV.\nSource : Soc. archéologique du Gers.' },
+      { y:1673, title:'† Père Maastricht ✓',
+        tip:'[DOCUMENTÉ] Charles de Batz (d\'Artagnan) tué au siège de Maastricht le 25 juin 1673. Louis l\'Aîné a 13 ans. La charge de capitaine-lieutenant des mousquetaires n\'est pas héréditaire : elle fut vendue puis attribuée à Louis de Forbin.' },
+      { y:1675, title:'Grande Écurie (~)',
+        tip:'[PROBABLE – date approx.] Louis I fut élevé comme page en la Grande Écurie du Roi, voie classique pour les fils de noblesse militaire. Date précise d\'entrée non documentée dans les sources accessibles.' },
+      { y:1680, title:'Lieutenant aux Gardes (~)',
+        tip:'[DOCUMENTÉ pour le grade, date approx.] Louis I devint lieutenant aux gardes. Grade confirmé par les sources (Soc. archéol. du Gers / Wikipedia). Aucune campagne précise ne lui est attribuée : sa santé fragile l\'éloignera rapidement du service actif.' },
+      { y:1687, title:'Retrait service (~)',
+        tip:'[DOCUMENTÉ pour le fait, date approx.] Les sources indiquent qu\'il "se retira du service à cause de ses infirmités". La date exacte du retrait n\'est pas précisée. On peut la situer approximativement entre 1685 et 1695.' },
+      { y:1709, title:'† Castelmore ✓',
+        tip:'[DOCUMENTÉ] Louis de Batz de Castelmore l\'Aîné meurt au château de Castelmore en décembre 1709, sans descendance connue. Son frère le Cadet lui survit cinq ans.\nSource : Soc. archéologique du Gers.' },
+    ]
+  },
+
+  /* ── LOUIS II LE CADET ── */
+  {
+    id: 'dartagnan-c',
+    label: "Louis II d'Artagnan",
+    sublabel: "le Cadet (1661–1714)",
+    icon: '🗡️',
+    cls: 'row-dartagnan-c',
+    events: [
+      { y:1661, title:'Naissance ✓',
+        tip:'[DOCUMENTÉ] Louis de Batz de Castelmore dit le Cadet, né le 4 juillet 1661 à Chalon-sur-Saône. Second fils de Charles de Batz. Même prénom que son frère aîné. Futur baron de Sainte-Croix et seigneur de Chanlecy du chef de sa mère.\nSource : Soc. archéol. du Gers.' },
+      { y:1673, title:'† Père Maastricht ✓',
+        tip:'[DOCUMENTÉ] Charles de Batz tué à Maastricht le 25 juin 1673 ; Louis le Cadet a 11 ans. Sa mère Anne-Charlotte gère les terres de Sainte-Croix jusqu\'à sa mort en 1683.' },
+      { y:1678, title:'Gardes menins (~)',
+        tip:'[DOCUMENTÉ pour la fonction, date approx.] Louis II fut sous-lieutenant aux gardes menins de Monseigneur le Dauphin (Louis de France, fils de Louis XIV, né 1661 – et non de Monsieur, frère du roi). Les gardes menins assuraient la protection et l\'éducation militaire du Dauphin ; charge de cour et militaire, réservée à la noblesse d\'épée.' },
+      { y:1683, title:'† Mère ✓',
+        tip:'[DOCUMENTÉ] Anne-Charlotte Boyer de Chanlecy meurt le 31 décembre 1683 au château de Sainte-Croix. Louis II hérite des terres maternelles de Sainte-Croix et Chanlecy en Bourgogne.' },
+      { y:1695, title:'Maréchal de camp (~)',
+        tip:'[DOCUMENTÉ pour le grade, date approx.] Louis II atteignit le grade de maréchal de camp (général de brigade). Grade confirmé mais date de promotion inconnue : estimée entre 1693 et 1703.' },
+      { y:1700, title:'Chevalier St-Louis (~)',
+        tip:'[DOCUMENTÉ pour la distinction, date approx.] Louis II reçut la croix de chevalier de Saint-Louis, distinction créée en 1693 pour récompenser les officiers méritants après 28 ans de service. Date précise non documentée.' },
+      { y:1707, title:'Mariage ✓',
+        tip:'[DOCUMENTÉ] Louis II épouse par contrat du 21 mai 1707 Marie Anne Amé (1670–1714), fille de Jean-Baptiste Amé, conseiller au présidial de Reims. Mariage tardif : il a 46 ans.\nSource : acte notarié, Soc. archéol. du Gers.' },
+      { y:1710, title:'Louis-Gabriel ✓',
+        tip:'[DOCUMENTÉ] Naissance de Louis-Gabriel de Batz de Castelmore (1710–1783), fils aîné, futur marquis de Castelmore. Un second fils, Louis-Jean-Baptiste, naît également. C\'est par Louis-Gabriel que la lignée des Batz-Castelmore se perpétue.' },
+      { y:1714, title:'† Sainte-Croix ✓',
+        tip:'[DOCUMENTÉ] Louis II meurt le 7 juin 1714 au château de Sainte-Croix. Sa femme Marie Anne Amé décède la même année. Il laisse deux fils mineurs, Louis-Gabriel (4 ans) et Louis-Jean-Baptiste.\nSource : Soc. archéol. du Gers.' },
+    ]
+  },
+
+  /* ── VIE POLITIQUE FRANÇAISE ── */
+  {
+    id: 'politique',
+    label: 'Vie politique',
+    sublabel: 'France · Louis XIV',
+    icon: '👑',
+    cls: 'row-politique',
+    events: [
+      { y:1648, title:'Fronde parlem. ✓',
+        tip:'[DOCUMENTÉ] Fronde parlementaire (1648-49) : le Parlement de Paris résiste à Mazarin. Anne d\'Autriche et le jeune Louis XIV fuient Paris (Nuit des Rois, janv. 1649).' },
+      { y:1650, title:'Fronde des Princes ✓',
+        tip:'[DOCUMENTÉ] Fronde des Princes (1650-53) : Condé, Conti, Longueville emprisonnés par Mazarin. Guerre civile larvée opposant les grands seigneurs à la régence.' },
+      { y:1651, title:'Majorité Louis XIV ✓',
+        tip:'[DOCUMENTÉ] Louis XIV déclaré majeur le 7 septembre 1651 (13 ans). Mazarin gouverne de facto jusqu\'en 1661.' },
+      { y:1659, title:'Paix Pyrénées ✓',
+        tip:'[DOCUMENTÉ] Paix des Pyrénées (7 nov. 1659) : fin de la guerre franco-espagnole. La France gagne l\'Artois et le Roussillon. Mariage de Louis XIV avec Marie-Thérèse d\'Espagne préparé.' },
+      { y:1660, title:'Mariage royal ✓',
+        tip:'[DOCUMENTÉ] Mariage de Louis XIV et Marie-Thérèse d\'Autriche (infante d\'Espagne), 9 juin 1660 à Saint-Jean-de-Luz.' },
+      { y:1661, title:'Mort Mazarin ✓',
+        tip:'[DOCUMENTÉ] Mort de Mazarin (9 mars 1661). Louis XIV gouverne seul. Arrestation de Fouquet (5 sept. 1661). Colbert aux finances.' },
+      { y:1664, title:'Compagnies royales ✓',
+        tip:'[DOCUMENTÉ] Fondation par Colbert de la Compagnie des Indes orientales et de la Compagnie des Indes occidentales (1664), piliers du commerce colonial français.' },
+      { y:1678, title:'Paix Nimègue ✓',
+        tip:'[DOCUMENTÉ] Paix de Nimègue (1678-79) : apogée de la puissance française. La France gagne la Franche-Comté. Louis XIV au sommet de sa gloire.' },
+      { y:1679, title:'Affaire des Poisons ✓',
+        tip:'[DOCUMENTÉ] Affaire des Poisons (1679-82) : scandale de la Chambre Ardente. Implique des nobles proches de la cour et Mme de Montespan. Louvois dirige l\'enquête.' },
+      { y:1681, title:'Réunions ✓',
+        tip:'[DOCUMENTÉ] Politique des Réunions (1679-84) : Louis XIV annexe Strasbourg (1681) et d\'autres places, sous couvert de procédures juridiques.' },
+      { y:1685, title:'Révocation Édit Nantes ✓',
+        tip:'[DOCUMENTÉ] Édit de Fontainebleau (18 oct. 1685) : révocation de l\'Édit de Nantes. Exil de 200 000 à 300 000 huguenots vers Prusse, Hollande, Angleterre, Afrique du Sud. Désastre économique et diplomatique. Cause directe de la guerre des Camisards (1702).' },
+      { y:1686, title:'Ligue d\'Augsbourg ✓',
+        tip:'[DOCUMENTÉ] Formation de la Ligue d\'Augsbourg (juil. 1686) contre Louis XIV : Habsbourg, Provinces-Unies, Suède, Espagne, princes allemands.' },
+      { y:1697, title:'Paix Ryswick ✓',
+        tip:'[DOCUMENTÉ] Paix de Ryswick (1697) : Louis XIV cède des conquêtes, reconnaît Guillaume III comme roi d\'Angleterre. Premier recul depuis 1678.' },
+      { y:1700, title:'Philippe V Espagne ✓',
+        tip:'[DOCUMENTÉ] Charles II d\'Espagne meurt (1er nov. 1700) : testament en faveur du duc d\'Anjou (Philippe V), petit-fils de Louis XIV. Déclenchement de la Guerre de Succession d\'Espagne.' },
+      { y:1710, title:'Crise dynastique ✓',
+        tip:'[DOCUMENTÉ] Crise dynastique française : Grand Dauphin mort (1711), son fils le duc de Bourgogne et son fils aîné morts de la rougeole (1712). Le futur Louis XV (arrière-petit-fils, 2 ans) seul héritier.' },
+      { y:1713, title:'Traité Utrecht ✓',
+        tip:'[DOCUMENTÉ] Traités d\'Utrecht (avr. 1713) et Rastatt (mars 1714) : fin de la Guerre de Succession d\'Espagne. Philippe V conserve l\'Espagne mais renonce aux droits sur la France. France épuisée.' },
+      { y:1715, title:'† Louis XIV ✓',
+        tip:'[DOCUMENTÉ] Mort de Louis XIV le 1er septembre 1715 à Versailles, à 76 ans, après 72 ans de règne. Régence de Philippe II d\'Orléans pour Louis XV (5 ans).' },
+    ]
+  },
+
+  /* ── GUERRE DES CAMISARDS ── */
+  {
+    id: 'camisards',
+    label: 'Guerre des Camisards',
+    sublabel: 'Révolte huguenote',
+    icon: '✝️',
+    cls: 'row-camisards',
+    events: [
+      { y:1685, title:'Révocation → origines ✓',
+        tip:'[DOCUMENTÉ] L\'Édit de Fontainebleau (oct. 1685) déclenche les dragonnades dans les Cévennes dès 1683-86. Les temples protestants sont détruits, les pasteurs exilés. Des prédicants laïcs et des "prophètes" prennent la relève clandestinement dans les assemblées du Désert.' },
+      { y:1702, title:'Début révolte ✓',
+        tip:'[DOCUMENTÉ] 24 juillet 1702 au Pont-de-Montvert : une soixantaine de religionnaires tuent l\'abbé du Chayla, inspecteur des missions anticatholiques. Début de la guerre des Camisards. Premiers chefs : Gédéon Laporte (tué oct. 1702), puis Pierre Laporte dit Rolland et Jean Cavalier (boulanger d\'Anduze, 21 ans). Côté royal : le comte de Broglie.' },
+      { y:1703, title:'Brûlement Cévennes ✓',
+        tip:'[DOCUMENTÉ] Fév. 1703 : Montrevel remplace de Broglie. Juillet 1703 : "brûlement des Cévennes" — plus de 450 villages rasés sur ordre de Montrevel, 6 000 maisons détruites, populations déportées. Malgré 25 000 soldats royaux + 3 000 miliciens face à ~2 000 Camisards, les troupes royales restent en échec. Atrocités des deux camps.' },
+      { y:1704, title:'Martignargues / Villars ✓',
+        tip:'[DOCUMENTÉ] 14 mars 1704 : Cavalier bat un régiment d\'élite à Martignargues. Montrevel disgracié, remplacé par le maréchal de Villars (avril 1704), partisan de la négociation. Mai 1704 : entrevue du pont d\'Avènes — Cavalier traite avec Villars puis se réfugie en Suisse. 13 août 1704 : Rolland tué par trahison au château de Castelnau-Valence. Fin 1704 : pacification principale.' },
+      { y:1705, title:'Soubresauts ✓',
+        tip:'[DOCUMENTÉ] 1705-1710 : troubles sporadiques. Tentatives de relancer l\'insurrection par des chefs exilés (Castanet, Catinat, Mazel). Regain en Vivarais (1709-10). Abraham Mazel s\'évade spectaculairement de la Tour de Constance (juil. 1705), reprend le combat.' },
+      { y:1710, title:'Fin de la révolte ✓',
+        tip:'[DOCUMENTÉ] Arrestation et exécution d\'Abraham Mazel (dernier chef actif), fin 1710 : terme de la révolte organisée. Bilan : ~3 000 Camisards tués, 2 000 condamnés aux galères, des centaines en exil. Le protestantisme cévenol survit clandestinement jusqu\'à l\'Édit de Tolérance de 1787.\nSource : E. Gibelin, Les Camisards ; Archives dép. du Gard.' },
+    ]
+  },
+
+  /* ── CONFLITS EN EUROPE ── */
+  {
+    id: 'conflits',
+    label: 'Conflits en Europe',
+    sublabel: 'Guerres & batailles',
+    icon: '🏰',
+    cls: 'row-conflits',
+    events: [
+      { y:1648, title:'Paix Westphalie ✓',
+        tip:'[DOCUMENTÉ] Traités de Westphalie (24 oct. 1648) : fin de la Guerre de Trente Ans. France gagne l\'Alsace supérieure. Naissance du système d\'États souverains. Négociateurs français : Mazarin, Servien, d\'Avaux.' },
+      { y:1652, title:'Faubourg St-Antoine ✓',
+        tip:'[DOCUMENTÉ] Bataille du faubourg Saint-Antoine (2 juil. 1652) : Condé bat Turenne aux portes de Paris. Mlle de Montpensier fait tirer le canon de la Bastille pour sauver Condé.' },
+      { y:1657, title:'Alliance Cromwell ✓',
+        tip:'[DOCUMENTÉ] Alliance franco-anglaise avec Cromwell (1657) contre l\'Espagne. Bataille des Dunes (14 juin 1658) : Turenne et Lockhart battent Condé et don Juan d\'Autriche.' },
+      { y:1667, title:'Guerre de Dévolution ✓',
+        tip:'[DOCUMENTÉ] Guerre de Dévolution (1667-68) : Louis XIV réclame les Pays-Bas espagnols. Turenne conquiert la Flandre. Triple Alliance (Angleterre, Hollande, Suède) arrête la France. Paix d\'Aix-la-Chapelle (1668).' },
+      { y:1672, title:'Guerre de Hollande ✓',
+        tip:'[DOCUMENTÉ] Guerre de Hollande (1672-78) : Louis XIV franchit le Rhin (12 juin 1672). Guillaume III d\'Orange résiste. Turenne tué à Salzbach (1675). Condé, Vauban, Luxembourg en campagne.' },
+      { y:1673, title:'Maastricht ✓',
+        tip:'[DOCUMENTÉ] Siège de Maastricht (juin 1673) : victoire française. D\'Artagnan (père) tué le 25 juin 1673. Vauban dirige les travaux de siège.' },
+      { y:1675, title:'† Turenne ✓',
+        tip:'[DOCUMENTÉ] Mort de Turenne à Salzbach (27 juil. 1675), tué par un boulet aux côtés de Saint-Hilaire. Condé prend le commandement, puis se retire définitivement.' },
+      { y:1683, title:'Siège de Vienne ✓',
+        tip:'[DOCUMENTÉ] Siège de Vienne par les Ottomans de Kara Mustafa (juil.-sept. 1683). Jan III Sobieski (Pologne) et Charles de Lorraine lèvent le siège (12 sept. 1683). Début du reflux ottoman des Balkans.' },
+      { y:1688, title:'Ligue d\'Augsbourg ✓',
+        tip:'[DOCUMENTÉ] Guerre de la Ligue d\'Augsbourg (1688-97). Louis XIV ravage le Palatinat (hiver 1688-89). Batailles : Fleurus (1690), Steenkerque (1692), Neerwinden (1693) — Luxembourg victorieux. Défaite navale de La Hougue (1692).' },
+      { y:1697, title:'Paix Ryswick ✓',
+        tip:'[DOCUMENTÉ] Paix de Ryswick (20 sept. 1697) : Louis XIV rend ses conquêtes depuis 1678 (sauf Strasbourg). Reconnaît Guillaume III roi d\'Angleterre.' },
+      { y:1700, title:'Succession d\'Espagne ✓',
+        tip:'[DOCUMENTÉ] Guerre de Succession d\'Espagne (1700-1714) : Grande Alliance (Angleterre, Provinces-Unies, Habsbourg, Portugal, Savoie) vs France et Espagne bourbonienne.' },
+      { y:1704, title:'Blenheim ✓',
+        tip:'[DOCUMENTÉ] Bataille de Blenheim / Höchstädt (13 août 1704) : Marlborough et Eugène de Savoie écrasent Tallard et l\'Électeur de Bavière. Désastre français en Allemagne.' },
+      { y:1706, title:'Ramillies ✓',
+        tip:'[DOCUMENTÉ] Bataille de Ramillies (23 mai 1706) : Marlborough bat Villeroi. Les Pays-Bas espagnols perdus. Villeroi disgracié, remplacé par Vendôme.' },
+      { y:1708, title:'Oudenarde ✓',
+        tip:'[DOCUMENTÉ] Bataille d\'Oudenarde (11 juil. 1708) : Marlborough et Eugène battent Vendôme. Lille assiégée et prise.' },
+      { y:1709, title:'Malplaquet ✓',
+        tip:'[DOCUMENTÉ] Bataille de Malplaquet (11 sept. 1709) : Villars perd mais inflige ~20 000 pertes aux Alliés (vs ~12 000 françaises). "Victoire à la Pyrrhus" de Marlborough qui dégoûte l\'Angleterre de la guerre.' },
+      { y:1712, title:'Denain ✓',
+        tip:'[DOCUMENTÉ] Bataille de Denain (24 juil. 1712) : Villars surprend et détruit l\'armée d\'Eugène de Savoie. Renversement stratégique décisif — la France peut négocier dignement.' },
+      { y:1713, title:'Utrecht / Rastatt ✓',
+        tip:'[DOCUMENTÉ] Traités d\'Utrecht (avr. 1713) et Rastatt (mars 1714). Philippe V conserve l\'Espagne. Angleterre gagne Gibraltar, Minorque, Acadie, Terre-Neuve. Autriche gagne les Pays-Bas espagnols.' },
+    ]
+  },
+
+  /* ── INDE ── */
+  {
+    id: 'inde',
+    label: 'Inde',
+    sublabel: 'Expansion française',
+    icon: '🌴',
+    cls: 'row-inde',
+    events: [
+      { y:1664, title:'Cie Indes orient. ✓',
+        tip:'[DOCUMENTÉ] Fondation de la Compagnie française des Indes orientales par Colbert (août 1664). Capital mixte public-privé. Concurrente de la VOC néerlandaise et de l\'EIC anglaise.' },
+      { y:1668, title:'Surat ✓',
+        tip:'[DOCUMENTÉ] Établissement d\'un comptoir français à Surat (1668) sur la côte du Gujarat, concurrençant Anglais et Hollandais. L\'Empire moghol d\'Aurangzeb contrôle la région.' },
+      { y:1672, title:'Côte Coromandel ✓',
+        tip:'[DOCUMENTÉ] François Martin et La Haye s\'établissent à San Thomé / Mylapore (côte de Coromandel). Conflit avec les Hollandais qui reprennent la place en 1674.' },
+      { y:1674, title:'Pondichéry fondée ✓',
+        tip:'[DOCUMENTÉ] François Martin fonde le comptoir de Pondichéry (1674) sur la côte de Coromandel. Première pierre de l\'empire français en Inde. Martin gouverneur de facto.' },
+      { y:1688, title:'Chandernagore ✓',
+        tip:'[DOCUMENTÉ] Établissement français à Chandernagore (Bengale), vers 1688-1692, sur le Gange. Comptoir stratégique face aux Anglais de Calcutta.' },
+      { y:1693, title:'Siège hollandais ✓',
+        tip:'[DOCUMENTÉ] La VOC s\'empare de Pondichéry (1693). François Martin résiste puis capitule. Les Hollandais rasent les fortifications.' },
+      { y:1697, title:'Retour Pondichéry ✓',
+        tip:'[DOCUMENTÉ] Restitution de Pondichéry à la France par le traité de Ryswick (1697). François Martin reprend et reconstruit le comptoir activement jusqu\'à sa mort.' },
+      { y:1706, title:'† François Martin ✓',
+        tip:'[DOCUMENTÉ] Mort de François Martin (31 déc. 1706), "père de l\'Inde française". Bilan : Pondichéry florissante, Chandernagore établie, réseau de comptoirs côtiers constitué.' },
+      { y:1708, title:'Réforme Cie ✓',
+        tip:'[DOCUMENTÉ] Réforme de la Compagnie des Indes (1708-09) : fusion avec d\'autres compagnies coloniales pour renforcer le capital, dans le contexte de la Guerre de Succession d\'Espagne.' },
+    ]
+  },
+
+  /* ── SIAM ── */
+  {
+    id: 'siam',
+    label: 'Siam',
+    sublabel: 'Expansion française',
+    icon: '🐘',
+    cls: 'row-siam',
+    events: [
+      { y:1660, title:'Missions MEP ✓',
+        tip:'[DOCUMENTÉ] Arrivée des premiers missionnaires des Missions Étrangères de Paris (MEP) en Asie du Sud-Est. Mgr Pallu et Lambert de la Motte visent le Siam comme base de pénétration vers la Chine.' },
+      { y:1664, title:'Rivalité VOC ✓',
+        tip:'[DOCUMENTÉ] La VOC force le roi Naraï à signer un traité commercial défavorable (1664). Naraï cherche des alliés européens alternatifs, ce qui ouvre la voie aux Français.' },
+      { y:1673, title:'Ambassade naufragée ✓',
+        tip:'[DOCUMENTÉ] Première ambassade siamoise vers la France (1673) : naufragée à Madagascar. Louis XIV sensibilisé au Siam par les jésuites et Colbert.' },
+      { y:1680, title:'Phaulkon ✓',
+        tip:'[DOCUMENTÉ] Constantine Phaulkon, aventurier grec, devient premier ministre de facto du roi Naraï. Chrétien converti, il favorise activement les relations franco-siamoises.' },
+      { y:1684, title:'Ambassade siamoise ✓',
+        tip:'[DOCUMENTÉ] Ambassade siamoise reçue par Louis XIV à Versailles (1684). Deux ambassadeurs de Phra Naraï présentés au roi : sensation à la cour. Engouement parisien pour "le Royaume du Siam".' },
+      { y:1685, title:'Mission Chaumont ✓',
+        tip:'[DOCUMENTÉ] Mission du Chevalier de Chaumont et de l\'abbé de Choisy à Ayutthaya (1685) : tentative d\'obtenir la conversion de Naraï et des bases militaires. Échec sur la conversion, succès partiel sur le commerce.' },
+      { y:1687, title:'Mission La Loubère ✓',
+        tip:'[DOCUMENTÉ] Mission de La Loubère et Céberet (1687-88) : ~1 400 soldats français à Bangkok et Mergui sous le général Desfarges. Phaulkon négocie des concessions françaises. Apogée de l\'influence française au Siam.' },
+      { y:1688, title:'Révolution siamoise ✓',
+        tip:'[DOCUMENTÉ] Révolution de 1688 : mort du roi Naraï (11 juil.). Phaulkon exécuté (5 juin). Le général Petracha s\'empare du trône. Les Français expulsés de Bangkok après combats. Desfarges évacue sous conditions.' },
+      { y:1689, title:'Retrait français ✓',
+        tip:'[DOCUMENTÉ] Retrait définitif des Français du Siam (1688-89). L\'aventure siamoise s\'achève. Le Siam se ferme aux Européens pour un siècle. Simon de La Loubère publie "Du Royaume de Siam" (1691), source majeure.' },
+    ]
+  },
+
+  /* ── CHINE ── */
+  {
+    id: 'chine',
+    label: 'Chine',
+    sublabel: 'Expansion française',
+    icon: '🐉',
+    cls: 'row-chine',
+    events: [
+      { y:1661, title:'Kangxi intronisé ✓',
+        tip:'[DOCUMENTÉ] L\'Empereur Kangxi monte sur le trône (1661, règne effectif 1669-1722). Ouvert aux sciences européennes, il transformera les relations avec les jésuites.' },
+      { y:1664, title:'Persécution ✓',
+        tip:'[DOCUMENTÉ] Persécution antichrétienne sous les régents de Kangxi (1664-69) : le jésuite Schall emprisonné, les missionnaires contraints de quitter Pékin.' },
+      { y:1669, title:'Verbiest réhabilité ✓',
+        tip:'[DOCUMENTÉ] Ferdinand Verbiest, jésuite flamand, réhabilité et nommé à la tête du Bureau astronomique impérial. Début de l\'âge d\'or jésuite à la cour Qing.' },
+      { y:1685, title:'Mission des Mathématiciens ✓',
+        tip:'[DOCUMENTÉ] Louis XIV envoie les "Mathématiciens du Roi" (1685-87) : jésuites Fontaney, Tachard, Bouvet, Gerbillon, Le Comte. Mission scientifique et diplomatique directe, distincte du Padroado portugais.' },
+      { y:1688, title:'Gerbillon & Bouvet à Pékin ✓',
+        tip:'[DOCUMENTÉ] Arrivée des jésuites français à Pékin (1688). Gerbillon et Bouvet reçus par Kangxi : ils l\'instruisent en mathématiques, astronomie, médecine, philosophie. Influence considérable à la cour.' },
+      { y:1689, title:'Traité Nerchinsk ✓',
+        tip:'[DOCUMENTÉ] Jean-François Gerbillon joue un rôle clef dans les négociations du Traité de Nerchinsk (1689) entre Chine et Russie, comme interprète et médiateur pour Kangxi.' },
+      { y:1692, title:'Édit de Tolérance ✓',
+        tip:'[DOCUMENTÉ] Édit de tolérance de Kangxi (22 mars 1692) : le christianisme autorisé en Chine. Apogée de l\'influence jésuite française à la cour Qing. Résultat direct de la diplomatie Gerbillon-Bouvet.' },
+      { y:1700, title:'Querelle des Rites ✓',
+        tip:'[DOCUMENTÉ] Querelle des Rites s\'intensifie : le légat papal Tournon (1705-06) interdit les rites confucéens aux chrétiens chinois. Kangxi furieux. Crise franco-romaine majeure. Clément XI condamne les rites (1704).' },
+      { y:1706, title:'Expulsion Tournon ✓',
+        tip:'[DOCUMENTÉ] Kangxi expulse le légat Tournon (1706) qui mourra en captivité à Macao. Affaiblissement progressif des missions catholiques en Chine.' },
+      { y:1715, title:'Bulle Ex Illa Die ✓',
+        tip:'[DOCUMENTÉ] Bulle Ex Illa Die de Clément XI (1715) : condamnation définitive des rites chinois. Début du déclin des missions catholiques. Kangxi interdit le christianisme hors Pékin.' },
+    ]
+  },
+
+  /* ── RUSSIE ── */
+  {
+    id: 'russie',
+    label: 'Russie',
+    sublabel: 'Expansion française',
+    icon: '❄️',
+    cls: 'row-russie',
+    events: [
+      { y:1654, title:'Réunification Ukraine ✓',
+        tip:'[DOCUMENTÉ] Traité de Pereïaslav (1654) : l\'Ukraine gauche se place sous protectorat russe (Tsar Alexis). Début de la poussée russe vers l\'ouest et le sud.' },
+      { y:1668, title:'Ambassade Potemkine ✓',
+        tip:'[DOCUMENTÉ] Ambassade de Pierre Potemkine en France (1668) : reçu par Louis XIV à Versailles. Discussion d\'une alliance anti-ottomane.' },
+      { y:1672, title:'Naissance Pierre Ier ✓',
+        tip:'[DOCUMENTÉ] Naissance de Pierre le Grand (30 mai 1672), fils du Tsar Alexis Ier. Futur réformateur de la Russie sur le modèle occidental.' },
+      { y:1682, title:'Pierre Ier co-tsar ✓',
+        tip:'[DOCUMENTÉ] Pierre Ier co-tsar avec Ivan V (1682). La Régente Sophie gouverne. Pierre écarte Sophie en 1689 et prend le pouvoir effectif.' },
+      { y:1686, title:'Paix Éternelle ✓',
+        tip:'[DOCUMENTÉ] Paix Éternelle russo-polonaise (1686) : Kiev définitivement russe. La Russie rejoint la Sainte Ligue contre les Ottomans.' },
+      { y:1697, title:'Grande Ambassade ✓',
+        tip:'[DOCUMENTÉ] Grande Ambassade de Pierre Ier en Europe occidentale (1697-98) : visite incognito des Pays-Bas, Angleterre, Allemagne. N\'inclut pas Paris mais prépare l\'occidentalisation de la Russie. Rencontre Leibniz.' },
+      { y:1700, title:'Grande Guerre du Nord ✓',
+        tip:'[DOCUMENTÉ] Grande Guerre du Nord (1700-1721) : Pierre Ier attaque Charles XII de Suède. Défaite de Narva (nov. 1700) : Charles XII écrase l\'armée russe. Pierre réforme son armée en urgence. La France, traditionnellement alliée de la Suède, reste neutre.' },
+      { y:1703, title:'St-Pétersbourg ✓',
+        tip:'[DOCUMENTÉ] Fondation de Saint-Pétersbourg (27 mai 1703) par Pierre Ier sur la Neva conquise aux Suédois. "Fenêtre sur l\'Europe" et future capitale.' },
+      { y:1709, title:'Poltava ✓',
+        tip:'[DOCUMENTÉ] Bataille de Poltava (8 juil. 1709) : Pierre Ier écrase Charles XII. La Suède perd sa suprématie baltique. La Russie s\'impose comme grande puissance européenne.' },
+      { y:1711, title:'Désastre du Prout ✓',
+        tip:'[DOCUMENTÉ] Campagne du Prout (1711) : Pierre Ier encerclé par les Ottomans. Traité humiliant : perte d\'Azov. Pierre se reconcentre sur la Baltique.' },
+      { y:1713, title:'Ambassade française ✓',
+        tip:'[DOCUMENTÉ] Première ambassade française permanente à Saint-Pétersbourg (1713-14) : la France cherche à intégrer la nouvelle puissance russe dans son système diplomatique après Utrecht.' },
+      { y:1715, title:'Rapprochement dynast. (~)',
+        tip:'[PROBABLE] Négociations en vue d\'un rapprochement franco-russe. Pierre Ier cherche la légitimité européenne. Prémices de sa visite à Paris (1717, sous la Régence), où il sera reçu par le jeune Louis XV.' },
+    ]
+  },
+];
+
+/* ─── BUILD DOM ─── */
+function build() {
+  const container = document.getElementById('tl');
+
+  /* year header */
+  const hrow = document.createElement('div');
+  hrow.className = 'year-header-row';
+  const lh = document.createElement('div');
+  lh.className = 'row-label-head';
+  lh.textContent = 'THÈME / ANNÉES →';
+  hrow.appendChild(lh);
+  YEARS.forEach(y => {
+    const c = document.createElement('div');
+    c.className = 'year-cell-head' + (y % 10 === 0 ? ' decade' : '');
+    c.textContent = y;
+    hrow.appendChild(c);
+  });
+  container.appendChild(hrow);
+
+  /* data rows */
+  ROWS.forEach(row => {
+    const byYear = {};
+    row.events.forEach(e => {
+      if (!byYear[e.y]) byYear[e.y] = [];
+      byYear[e.y].push(e);
+    });
+
+    const trow = document.createElement('div');
+    trow.className = 'tl-row';
+
+    /* sticky label */
+    const lbl = document.createElement('div');
+    lbl.className = 'row-label';
+    lbl.innerHTML = `<span class="row-label-icon">${row.icon}</span>
+      <span class="row-label-text">${row.label}<em>${row.sublabel}</em></span>`;
+    trow.appendChild(lbl);
+
+    /* year cells */
+    YEARS.forEach(y => {
+      const cell = document.createElement('div');
+      cell.className = 'year-cell' + (y % 10 === 0 ? ' decade-col' : '');
+      if (byYear[y]) {
+        byYear[y].forEach(ev => {
+          const div = document.createElement('div');
+          div.className = `event ${row.cls}`;
+          div.setAttribute('data-tip', ev.tip);
+          div.innerHTML = `<strong>${ev.title}</strong>`;
+          cell.appendChild(div);
+        });
+      }
+      trow.appendChild(cell);
+    });
+    container.appendChild(trow);
+  });
+}
+
+build();
+attachNotes();
+
+/* ═══════════════════════════════════════════════
+   SYSTÈME DE NOTES PERSONNELLES
+   - Clic simple   → affiche la bulle fixée
+   - Double-clic   → ouvre l'éditeur de note
+   - Notes sauvegardées dans localStorage Edge
+   ═══════════════════════════════════════════════ */
+function attachNotes() {
+
+  /* ── STYLES SUPPLÉMENTAIRES ── */
+  const st = document.createElement('style');
+  st.textContent = `
+    /* Bulle fixée au clic */
+    .bubble-fixed {
+      position: fixed;
+      background: #0D0B05;
+      color: #F2E8D0;
+      border: 1px solid #C9A84C;
+      border-radius: 6px;
+      padding: 0.7rem 0.9rem;
+      font-size: 0.58rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      max-width: 260px;
+      z-index: 200;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.9);
+      font-family: 'Libre Baskerville', serif;
+      cursor: default;
+    }
+    .bubble-fixed .bf-close {
+      display: block;
+      text-align: right;
+      color: #C9A84C;
+      font-size: 0.7rem;
+      cursor: pointer;
+      margin-bottom: 0.3rem;
+      font-family: 'Cinzel', serif;
+    }
+    .bubble-fixed .bf-note {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #3A3020;
+      color: #E8D08A;
+      font-style: italic;
+      white-space: pre-wrap;
+    }
+    .bubble-fixed .bf-note-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      color: #C9A84C;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    /* Indicateur visuel : événement avec note */
+    .event.has-note::after {
+      content: '✎';
+      position: absolute;
+      top: 1px; right: 2px;
+      font-size: 0.55rem;
+      color: #C9A84C;
+      pointer-events: none;
+    }
+
+    /* Modal éditeur */
+    .note-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .note-modal {
+      background: #0F0D06;
+      border: 1px solid #C9A84C;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      width: min(420px, 90vw);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.95);
+      font-family: 'Libre Baskerville', serif;
+    }
+    .note-modal h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: #C9A84C;
+      margin-bottom: 0.3rem;
+    }
+    .note-modal .nm-event-title {
+      font-size: 0.62rem;
+      color: #E8D08A;
+      margin-bottom: 0.8rem;
+      font-style: italic;
+    }
+    .note-modal textarea {
+      width: 100%;
+      height: 120px;
+      background: #1A1408;
+      color: #F2E8D0;
+      border: 1px solid #3A3020;
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-family: 'Libre Baskerville', serif;
+      font-size: 0.6rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+    .note-modal textarea:focus { border-color: #C9A84C; }
+    .note-modal .nm-hint {
+      font-size: 0.5rem;
+      color: #6A5A30;
+      margin-top: 0.3rem;
+      font-style: italic;
+    }
+    .note-modal .nm-buttons {
+      display: flex; gap: 0.6rem;
+      margin-top: 0.8rem; justify-content: flex-end;
+    }
+    .note-modal button {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      padding: 0.35rem 0.8rem;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid #3A3020;
+      background: #1A1408;
+      color: #E8D08A;
+      transition: background 0.15s;
+    }
+    .note-modal button:hover { background: #2A2010; }
+    .note-modal button.nm-save {
+      background: #3A2800;
+      border-color: #C9A84C;
+      color: #C9A84C;
+    }
+    .note-modal button.nm-save:hover { background: #4A3800; }
+    .note-modal button.nm-delete {
+      color: #A05050;
+      border-color: #501010;
+    }
+  `;
+  document.head.appendChild(st);
+
+  /* ── STORAGE KEY PREFIX ── */
+  const PREFIX = 'frise1650_note_';
+
+  function noteKey(eventEl) {
+    /* unique key = row id + year cell position */
+    const row = eventEl.closest('.tl-row');
+    const cell = eventEl.closest('.year-cell');
+    const rowLabel = row ? row.querySelector('.row-label-text') : null;
+    const rowId = rowLabel ? rowLabel.textContent.trim().slice(0,20) : 'r';
+    const tip = eventEl.getAttribute('data-tip') || '';
+    /* use first 30 chars of tip as discriminator */
+    return PREFIX + rowId + '_' + tip.slice(0,30).replace(/\s+/g,'_');
+  }
+
+  /* ── LOAD EXISTING NOTES ON STARTUP ── */
+  document.querySelectorAll('.event[data-tip]').forEach(el => {
+    const k = noteKey(el);
+    try {
+      const saved = localStorage.getItem(k);
+      if (saved) el.classList.add('has-note');
+    } catch(e) {}
+  });
+
+  /* ── FLOATING FIXED BUBBLE ── */
+  let currentBubble = null;
+  function closeBubble() {
+    if (currentBubble) { currentBubble.remove(); currentBubble = null; }
+  }
+
+  function showBubble(el, x, y) {
+    closeBubble();
+    const tip = el.getAttribute('data-tip') || '';
+    const k = noteKey(el);
+    let userNote = '';
+    try { userNote = localStorage.getItem(k) || ''; } catch(e) {}
+
+    const div = document.createElement('div');
+    div.className = 'bubble-fixed';
+    div.innerHTML = `<span class="bf-close">✕ fermer</span>${tip}` +
+      (userNote ? `<div class="bf-note"><span class="bf-note-label">✎ VOTRE NOTE</span>${userNote}</div>` : '');
+
+    /* position */
+    div.style.left = Math.min(x + 10, window.innerWidth - 280) + 'px';
+    div.style.top  = Math.min(y + 10, window.innerHeight - 200) + 'px';
+    document.body.appendChild(div);
+    currentBubble = div;
+
+    div.querySelector('.bf-close').addEventListener('click', closeBubble);
+  }
+
+  /* ── MODAL EDITOR ── */
+  function openEditor(el) {
+    closeBubble();
+    const title = el.querySelector('strong') ? el.querySelector('strong').textContent : '';
+    const k = noteKey(el);
+    let existing = '';
+    try { existing = localStorage.getItem(k) || ''; } catch(e) {}
+
+    const overlay = document.createElement('div');
+    overlay.className = 'note-overlay';
+    overlay.innerHTML = `
+      <div class="note-modal">
+        <h3>✎ NOTE PERSONNELLE</h3>
+        <div class="nm-event-title">${title}</div>
+        <textarea placeholder="Saisissez votre commentaire, source, hypothèse…">${existing}</textarea>
+        <div class="nm-hint">Sauvegardé dans Edge · Persistant entre les sessions</div>
+        <div class="nm-buttons">
+          <button class="nm-delete">Supprimer la note</button>
+          <button class="nm-cancel">Annuler</button>
+          <button class="nm-save">Sauvegarder ✓</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const ta = overlay.querySelector('textarea');
+    ta.focus();
+
+    overlay.querySelector('.nm-save').addEventListener('click', () => {
+      const val = ta.value.trim();
+      try {
+        if (val) { localStorage.setItem(k, val); el.classList.add('has-note'); }
+        else     { localStorage.removeItem(k);   el.classList.remove('has-note'); }
+      } catch(e) { alert('Sauvegarde impossible (localStorage non disponible).'); }
+      overlay.remove();
+    });
+    overlay.querySelector('.nm-cancel').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('.nm-delete').addEventListener('click', () => {
+      try { localStorage.removeItem(k); el.classList.remove('has-note'); } catch(e) {}
+      overlay.remove();
+    });
+    /* close on overlay click */
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    /* Ctrl+Enter = save */
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) overlay.querySelector('.nm-save').click();
+    });
+  }
+
+  /* ── ATTACH EVENTS TO ALL .event ELEMENTS ── */
+  document.querySelectorAll('.event[data-tip]').forEach(el => {
+    let clickTimer = null;
+
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      clickTimer = setTimeout(() => {
+        showBubble(el, e.clientX, e.clientY);
+        clickTimer = null;
+      }, 220);
+    });
+
+    el.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+      openEditor(el);
+    });
+  });
+
+  /* click anywhere else closes bubble */
+  document.addEventListener('click', e => {
+    if (currentBubble && !currentBubble.contains(e.target)) closeBubble();
+  });
+
+  /* ── HINT BANNER ── */
+  const hint = document.createElement('div');
+  hint.style.cssText = 'background:#100E06;border-bottom:1px solid #2A2010;padding:0.4rem 1.5rem;text-align:center;font-family:Cinzel,serif;font-size:0.55rem;letter-spacing:0.1em;color:#6A5A30;';
+  hint.textContent = 'CLIC = afficher la bulle   ·   DOUBLE-CLIC = ajouter / modifier votre note personnelle   ·   ✎ = note existante';
+  document.querySelector('.legend').after(hint);
+}
+</script>
+</body>
+</html>

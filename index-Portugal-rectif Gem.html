@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Cartographie Historique des Routes des Indes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+   
+    <style>
+        :root {
+            --bg-page: #f4f1ea;          /* Couleur de fond de la page (hors carte) */
+            --bg-ocean: #d4e6f1;         /* Bleu océan clair et distinct */
+            --bg-land: #fcfaf2;          /* Terre beige/crème de style parchemin */
+            --border-land: #95a5a6;      /* Frontières grises nettes */
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            max-width: 900px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 26px;
+            color: #1a252f;
+        }
+
+        #description-periode {
+            margin: 0;
+            font-size: 15px;
+            color: #34495e;
+            line-height: 1.5;
+            min-height: 50px;
+            font-style: italic;
+        }
+
+        /* Sélecteur de périodes stylisé */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #e5dec9;
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-periode {
+            background: none;
+            border: none;
+            color: #5d6d7e;
+            padding: 10px 22px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: inherit;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-periode.active {
+            background-color: #2c3e50;
+            color: #ffffff;
+        }
+
+        .btn-periode:hover:not(.active) {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-dark);
+        }
+
+        /* Conteneur de la Carte */
+        #map-container {
+            position: relative;
+            background-color: var(--bg-ocean);
+            border-radius: 8px;
+            border: 2px solid #b2babb;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .pays-fond {
+            fill: var(--bg-land) !important;
+            stroke: var(--border-land) !important;
+            stroke-width: 0.7px;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: rgba(44, 62, 80, 0.1);
+            stroke-width: 0.5px;
+        }
+
+        .route-maritime {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.9;
+        }
+
+        .escale-point {
+            cursor: pointer;
+        }
+
+        /* Tooltip (Bulle d'infos) */
+        .custom-tooltip {
+            position: absolute;
+            visibility: hidden;
+            background-color: rgba(255, 255, 255, 0.96);
+            color: #2c3e50;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: sans-serif;
+            max-width: 300px;
+            border: 2px solid #2c3e50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            pointer-events: none;
+            z-index: 10;
+            line-height: 1.4;
+        }
+
+        .tooltip-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 3px;
+            color: #111;
+        }
+
+        .tooltip-status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+
+        /* Légende historique */
+        .legend {
+            display: flex;
+            gap: 25px;
+            margin-top: 15px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 id="titre-periode">Chargement du fond de carte mondial...</h1>
+    <p id="description-periode">Veuillez patienter pendant le traçage des continents.</p>
+</header>
+
+<div class="controls">
+    <button class="btn-periode active" onclick="changerEpoque('p1')">1500 - 1650</button>
+    <button class="btn-periode" onclick="changerEpoque('p2')">1650 - 1715</button>
+    <button class="btn-periode" onclick="changerEpoque('p3')">Après 1869</button>
+</div>
+
+<div id="map-container">
+    <svg id="carte"></svg>
+    <div id="tooltip" class="custom-tooltip"></div>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background: #27ae60;"></div> Portugal</div>
+    <div class="legend-item"><div class="legend-color" style="background: #e67e22;"></div> Provinces-Unies (VOC)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #c0392b;"></div> Grande-Bretagne (EIC)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #2980b9;"></div> France (CIO)</div>
+    <div class="legend-item"><div class="legend-color" style="background: #fff; border: 2px solid #7f8c8d;"></div> Point d'Étape / Relais</div>
+</div>
+
+<script>
+    // ==========================================
+    // DATA GENERATION WITH ENRICHED PORTUGUESE NETWORK
+    // ==========================================
+    const baseDonneesEpoques = {
+        p1: {
+            titre: "1500-1650 : La Carreira da Índia et l'Hégémonie Portugaise",
+            desc: "Monopole absolu du Portugal basé sur le traité de Tordesillas. Pour contourner les calmes de l'Afrique, les flottes effectuent la 'Volta do Mar' jusqu'au Brésil avant de piquer vers le Cap. L'Océan Indien est verrouillé par des forteresses clés imposant la taxe du Cartaz.",
+            routes: [
+                {
+                    nation: "portugal", couleur: "#27ae60", nom: "Carreira da Índia (Route Royale)",
+                    coords: [
+                        [-9.14, 38.72],   // Lisbonne
+                        [-16.25, 28.46],  // Canaries
+                        [-23.51, 14.91],  // Cap-Vert
+                        [-38.50, -12.97], // Volta do Mar (Détour par Salvador de Bahia, Brésil)
+                        [18.42, -34.50],  // Cap de Bonne-Espérance
+                        [40.79, -15.03],  // Île de Mozambique
+                        [39.66, -4.05],   // Mombasa
+                        [53.82, 12.46],   // Socotra
+                        [56.45, 27.10],   // Ormuz
+                        [70.98, 20.71],   // Diu
+                        [73.98, 15.49],   // Goa
+                        [76.26, 9.93],    // Cochin
+                        [102.24, 2.18]    // Malacca
+                    ]
+                }
+            ],
+            escales: [
+                { coords: [-9.14, 38.72], nom: "Lisbonne (Port de Restelo)", statut: "depart", nation: "Portugal", desc: "Point de départ des flottes de l'Armada da Índia chargées de soldats, d'artillerie et de métaux précieux." },
+                { coords: [-16.25, 28.46], nom: "Les Canaries", statut: "neutre", nation: "Espagne", desc: "Zone de ralliement et premier point d'observation des vents." },
+                { coords: [-23.51, 14.91], nom: "Praia (Cap-Vert)", statut: "relais", nation: "Portugal", desc: "Dernière escale de ravitaillement en eau douce avant le grand saut atlantique." },
+                { coords: [-38.50, -12.97], nom: "Salvador de Bahia", statut: "relais", nation: "Portugal (Brésil)", desc: "Étape optionnelle mais cruciale induite par la 'Volta do Mar' (la grande boucle de navigation permettant de capter les alizés du Sud)." },
+                { coords: [18.42, -34.50], nom: "Cap de Bonne-Espérance", statut: "relais", nation: "Portugal", desc: "Le 'Cap des Tempêtes' franchi par Vasco de Gama en 1497. Zone de transition extrêmement redoutée." },
+                { coords: [40.79, -15.03], nom: "Fort Saint-Sébastien (Mozambique)", statut: "exclusif", nation: "Portugal", desc: "Escale fortifiée majeure d'Afrique de l'Est. Hôpital naval et entrepôt indispensable pour réparer les navires après le Cap." },
+                { coords: [39.66, -4.05], nom: "Mombasa (Fort Jesus)", statut: "exclusif", nation: "Portugal", desc: "Citadelle bâtie pour soumettre les cités-États swahilies et bloquer les incursions ottomanes." },
+                { coords: [53.82, 12.46], nom: "Socotra", statut: "exclusif", nation: "Portugal", desc: "Forteresse temporaire positionnée pour verrouiller la sortie de la mer Rouge et bloquer le commerce arabe traditionnel." },
+                { coords: [56.45, 27.10], nom: "Ormuz", statut: "exclusif", nation: "Portugal", desc: "Pris par Afonso de Albuquerque en 1515. Fort contrôlant l'accès au Golfe Persique et le flux des marchandises vers l'Iran et la Turquie." },
+                { coords: [70.98, 20.71], nom: "Diu", statut: "exclusif", nation: "Portugal", desc: "Forteresse imprenable barrant le golfe de Cambaye au Gujarat, gagnée après la célèbre bataille navale de 1509." },
+                { coords: [73.98, 15.49], nom: "Goa (Velha Goa)", statut: "destination", nation: "Portugal", desc: "Capitale suprême de l'Estado da Índia. Siège du vice-roi et plaque tournante du commerce des épices fines et des chevaux." },
+                { coords: [76.26, 9.93], nom: "Cochin", statut: "destination", nation: "Portugal", desc: "Premier établissement commercial fortifié portugais en Inde, au cœur de la production mondiale de poivre." },
+                { coords: [102.24, 2.18], nom: "Malacca", statut: "destination", nation: "Portugal", desc: "Prise en 1511. Carrefour absolu reliant l'océan Indien à la mer de Chine (commerce de la soie et des clous de girofle)." }
+            ]
+        },
+        p2: {
+            titre: "1650-1715 : L'Affrontement des Grandes Compagnies de Commerce",
+            desc: "Les puissances du Nord brisent le réseau portugais. La VOC hollandaise s'empare de Ceylan et Java en lançant la route rapide de Brouwer dans le grand Sud. L'EIC anglaise s'ancre solidement en Inde tandis que la CIO française fonde Lorient et Pondichéry.",
+            routes: [
+                {
+                    nation: "pays_bas", couleur: "#e67e22", nom: "Route de la VOC (Batavia)",
+                    coords: [[4.90, 52.37], [-19.50, 28.50], [-26.50, 14.90], [-37.00, -9.00], [18.42, -33.92], [80.00, -38.00], [105.70, -6.10], [106.82, -6.17]]
+                },
+                {
+                    nation: "grande_bretagne", couleur: "#c0392b", nom: "Route de l'EIC (Madras / Bombay)",
+                    coords: [[-0.12, 51.50], [-16.25, 28.46], [-23.51, 14.91], [-34.00, -8.00], [-5.71, -15.95], [19.50, -35.50], [47.50, -10.00], [80.27, 13.08]]
+                },
+                {
+                    nation: "france", couleur: "#2980b9", nom: "Route de la CIO (Pondichéry)",
+                    coords: [[-3.36, 47.75], [-13.00, 28.40], [-20.50, 14.90], [-31.00, -7.00], [21.50, -36.50], [57.50, -20.16], [79.83, 11.93]]
+                }
+            ],
+            escales: [
+                { coords: [4.90, 52.37], nom: "Amsterdam", statut: "depart", nation: "Provinces-Unies", desc: "Chantier naval et chambre financière de la VOC." },
+                { coords: [-0.12, 51.50], nom: "Londres", statut: "depart", nation: "Grande-Bretagne", desc: "Siège de l'East India Company." },
+                { coords: [-3.36, 47.75], nom: "Lorient", statut: "depart", nation: "France", desc: "Port créé par Colbert spécialement pour armer la Compagnie Royale des Indes." },
+                { coords: [18.42, -33.92], nom: "Le Cap (Colonie du Cap)", statut: "exclusif", nation: "VOC (Hollandais)", desc: "La taverne des deux océans. Station de ravitaillement obligatoire en légumes et bétail pour les flottes bataves." },
+                { coords: [-5.71, -15.95], nom: "Sainte-Hélène", statut: "exclusif", nation: "EIC (Anglais)", desc: "Île forteresse de l'Atlantique permettant aux navires britanniques d'éviter l'escale hollandaise du Cap." },
+                { coords: [57.50, -20.16], nom: "Île de France (Maurice)", statut: "exclusif", nation: "France", desc: "Base navale et militaire française protégeant la route de l'Inde face aux Anglais." },
+                { coords: [79.83, 11.93], nom: "Pondichéry", statut: "destination", nation: "France", desc: "Siège des comptoirs français, axé sur l'exportation massive de cotonnades et d'indiennes." },
+                { coords: [80.27, 13.08], nom: "Madras (Fort St. George)", statut: "destination", nation: "Grande-Bretagne", desc: "Poste fortifié anglais dominant l'économie de la côte de Coromandel." },
+                { coords: [106.82, -6.17], nom: "Batavia (Java)", statut: "destination", nation: "VOC", desc: "Quartier général fortifié hollandais régulant tout le commerce des épices d'Insulinde." }
+            ]
+        },
+        p3: {
+            titre: "Après 1869 : La Révolution Industrielle et l'Axe de Suez",
+            desc: "L'ouverture du canal de Suez en 1869 achève l'ère de la marine à voile et du contournement africain. Les navires à vapeur empruntent une trajectoire rectiligne ultrarapide, faisant de la Méditerranée et de la Mer Rouge l'artère de l'Empire britannique.",
+            routes: [
+                {
+                    nation: "grande_bretagne", couleur: "#c0392b", nom: "Axe Impérial britannique",
+                    coords: [[-0.12, 51.50], [-9.14, 38.72], [14.50, 35.90], [32.31, 31.26], [42.50, 15.50], [45.01, 12.78], [72.87, 19.07]]
+                },
+                {
+                    nation: "france", couleur: "#2980b9", nom: "Ligne d'Indochine (Messageries Maritimes)",
+                    coords: [[5.36, 43.29], [15.50, 34.50], [32.31, 31.26], [44.00, 14.50], [80.27, 13.08], [103.85, 1.29], [106.66, 10.76]]
+                }
+            ],
+            escales: [
+                { coords: [5.36, 43.29], nom: "Marseille", statut: "depart", nation: "France", desc: "Devient le 'Port de l'Empire' grâce à sa connexion directe avec le canal." },
+                { coords: [14.50, 35.90], nom: "Malte (La Valette)", statut: "exclusif", nation: "Grande-Bretagne", desc: "Citadelle navale verrouillant le centre de la Méditerranée." },
+                { coords: [32.31, 31.26], nom: "Canal de Suez", statut: "neutre", nation: "International", desc: "Percée de 160km réduisant la distance Europe-Inde de près de la moitié." },
+                { coords: [45.01, 12.78], nom: "Aden", statut: "exclusif", nation: "Grande-Bretagne", desc: "Poste fortifié et station de charbonnage indispensable pour alimenter les chaudières des steamers." },
+                { coords: [72.87, 19.07], nom: "Bombay", statut: "destination", nation: "Empire Britannique (Raj)", desc: "La porte de l'Inde, connectée par chemin de fer à tout le sous-continent." },
+                { coords: [106.66, 10.76], nom: "Saïgon", statut: "destination", nation: "France", desc: "Centre administratif et économique majeur de l'Indochine française." }
+            ]
+        }
+    };
+
+    // ==========================================
+    // CARTE INITIALIZATION & GEOMETRY
+    // ==========================================
+    const width = 960;
+    const height = 500;
+
+    // Projection centrée sur l'océan Indien et le Moyen-Orient
+    const projection = d3.geoMercator()
+        .scale(150)
+        .center([40, 15])
+        .translate([width / 2, height / 2]);
+
+    const pathGenerator = d3.geoPath().projection(projection);
+
+    const svg = d3.select("#carte")
+        .attr("width", width)
+        .attr("height", height);
+
+    // Initialisation des calques (Respect strict de l'empilement)
+    const graticuleGroup = svg.append("g").attr("class", "graticule-layer");
+    const fondCarteGroup = svg.append("g").attr("class", "fond-carte-layer");
+    const routesGroup = svg.append("g").attr("class", "routes-layer");
+    const escalesGroup = svg.append("g").attr("class", "escales-layer");
+
+    // Lignes de coordonnées
+    graticuleGroup.append("path")
+        .datum(d3.geoGraticule().step([30, 30]))
+        .attr("class", "graticule")
+        .attr("d", pathGenerator);
+
+    // Chargement du fond de carte mondial TopoJSON
+
+
+  d3.json("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson").then(function(worldData) {
+    const pays = worldData.features;
+        
+        // Dessin des pays avec styles forcés
+        fondCarteGroup.selectAll(".pays-fond")
+            .data(pays)
+            .enter()
+            .append("path")
+            .attr("class", "pays-fond")
+            .attr("d", pathGenerator);
+
+        // Lancement forcé de la première époque une fois la géographie chargée
+        changerEpoque('p1');
+    }).catch(error => {
+        console.error("Erreur d'acquisition de la carte: ", error);
+        d3.select("#titre-periode").text("Erreur d'affichage Internet");
+        d3.select("#description-periode").text("Le navigateur bloque l'accès aux données. Essayez d'utiliser un autre navigateur (comme Firefox) ou vérifiez votre connexion.");
+    });
+
+    const tooltip = d3.select("#tooltip");
+
+    // ==========================================
+    // INTERACTIVITY ENGINE
+    // ==========================================
+    function changerEpoque(codeEpoque) {
+        // Mise à jour de l'état graphique des boutons
+        document.querySelectorAll(".btn-periode").forEach((btn, idx) => {
+            btn.classList.remove("active");
+            if((codeEpoque === 'p1' && idx === 0) || (codeEpoque === 'p2' && idx === 1) || (codeEpoque === 'p3' && idx === 2)) {
+                btn.classList.add("active");
+            }
+        });
+
+        const epoque = baseDonneesEpoques[codeEpoque];
+        d3.select("#titre-periode").text(epoque.titre);
+        d3.select("#description-periode").text(epoque.desc);
+
+        // --- SECTION ROUTES ---
+        const routesGeoJSON = epoque.routes.map(r => ({
+            type: "Feature",
+            properties: { couleur: r.couleur, nom: r.nom },
+            geometry: { type: "LineString", coordinates: r.coords }
+        }));
+
+        const selecteurRoutes = routesGroup.selectAll(".route-maritime")
+            .data(routesGeoJSON, d => d.properties.nom);
+
+        selecteurRoutes.exit()
+            .transition()
+            .duration(300)
+            .style("opacity", 0)
+            .remove();
+
+        selecteurRoutes.enter()
+            .append("path")
+            .attr("class", "route-maritime")
+            .attr("d", pathGenerator)
+            .style("stroke", d => d.properties.couleur)
+            .style("stroke-width", "3px")
+            .each(function() {
+                const longueur = this.getTotalLength();
+                d3.select(this)
+                    .style("stroke-dasharray", longueur + " " + longueur)
+                    .style("stroke-dashoffset", longueur);
+            })
+            .merge(selecteurRoutes)
+            .transition()
+            .duration(1500)
+            .style("stroke-dashoffset", 0)
+            .style("opacity", 0.9);
+
+        // --- SECTION ESCALES ---
+        const selecteurEscales = escalesGroup.selectAll(".escale-point")
+            .data(epoque.escales, d => d.nom);
+
+        selecteurEscales.exit()
+            .transition()
+            .duration(300)
+            .attr("r", 0)
+            .remove();
+
+        const nouveauxPoints = selecteurEscales.enter()
+            .append("circle")
+            .attr("class", "escale-point")
+            .attr("cx", d => projection(d.coords)[0])
+            .attr("cy", d => projection(d.coords)[1])
+            .attr("r", 0)
+            .style("stroke", "#2c3e50")
+            .style("stroke-width", "1.5px")
+            .merge(selecteurEscales);
+
+        nouveauxPoints.style("fill", d => {
+            if (d.statut === "relais" || d.statut === "neutre") return "#ffffff";
+            if (d.nation.includes("Portugal")) return "#27ae60";
+            if (d.nation.includes("VOC") || d.nation.includes("Pays-Bas")) return "#e67e22";
+            if (d.nation.includes("EIC") || d.nation.includes("Grande-Bretagne")) return "#c0392b";
+            if (d.nation.includes("CIO") || d.nation.includes("France")) return "#2980b9";
+            return "#ffffff";
+        });
+
+        nouveauxPoints.transition()
+            .duration(600)
+            .attr("r", d => (d.statut === "depart" || d.statut === "destination") ? 7 : 5);
+
+        // Événements souris pour la bulle d'infos
+        nouveauxPoints
+            .on("mouseover", function(event, d) {
+                d3.select(this).transition().duration(100).attr("r", 9).style("stroke-width", "2.5px");
+
+                let couleurBadge = "#7f8c8d";
+                let texteStatut = d.statut;
+                if (d.statut === "exclusif") { couleurBadge = "#c0392b"; texteStatut = `Forteresse / Comptoir : ${d.nation}`; }
+                else if (d.statut === "relais") { couleurBadge = "#7f8c8d"; texteStatut = "Échelle de ravitaillement"; }
+                else if (d.statut === "neutre") { couleurBadge = "#7f8c8d"; texteStatut = "Escale Commune / Neutre"; }
+                else if (d.statut === "depart") { couleurBadge = "#2c3e50"; texteStatut = `Port d'Attache : ${d.nation}`; }
+                else if (d.statut === "destination") { couleurBadge = "#27ae60"; texteStatut = `Établissement des Indes (${d.nation})`; }
+
+                tooltip.style("visibility", "visible")
+                    .html(`
+                        <div class="tooltip-title">${d.nom}</div>
+                        <div class="tooltip-status" style="background-color: ${couleurBadge}">${texteStatut}</div>
+                        <div>${d.desc}</div>
+                    `);
+            })
+            .on("mousemove", function(event) {
+                const conteneurCoords = d3.pointer(event, d3.select("#map-container").node());
+                tooltip
+                    .style("top", (conteneurCoords[1] - 10) + "px")
+                    .style("left", (conteneurCoords[0] + 15) + "px");
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this).transition().duration(100)
+                    .attr("r", (d.statut === "depart" || d.statut === "destination") ? 7 : 5)
+                    .style("stroke-width", "1.5px");
+                tooltip.style("visibility", "hidden");
+            });
+    }
+</script>
+
+</body>
+</html>
